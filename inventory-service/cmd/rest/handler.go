@@ -8,17 +8,17 @@ import (
 	"net/http"
 )
 
-type ProductService interface {
+type InventoryService interface {
 	CreateProduct(request use_case.CreateProductRequest) (*uuid.UUID, error)
 	GetAllProducts() ([]use_case.ProductDetail, error)
 }
 
 type Handler struct {
-	productService ProductService
+	inventoryService InventoryService
 }
 
-func NewHandler(productService ProductService) *Handler {
-	return &Handler{productService: productService}
+func NewHandler(inventoryService InventoryService) *Handler {
+	return &Handler{inventoryService: inventoryService}
 }
 
 func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
@@ -28,12 +28,12 @@ func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), http.StatusBadRequest, nil)
 		return
 	}
-	productId, err := h.productService.CreateProduct(request)
+	productId, err := h.inventoryService.CreateProduct(request)
 
 	lib.WriteResponse(w, err, http.StatusCreated, productId)
 }
 
 func (h Handler) getProduct(w http.ResponseWriter, r *http.Request) {
-	products, err := h.productService.GetAllProducts()
+	products, err := h.inventoryService.GetAllProducts()
 	lib.WriteResponse(w, err, http.StatusOK, products)
 }

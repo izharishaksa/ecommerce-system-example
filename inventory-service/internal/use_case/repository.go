@@ -5,7 +5,7 @@ import (
 	"inventory-service/internal/inventory"
 )
 
-type ProductRepository interface {
+type InventoryRepository interface {
 	SaveProduct(product *inventory.Product) error
 	FindProductById(id uuid.UUID) (*inventory.Product, error)
 	GetAllProducts() ([]*inventory.Product, error)

@@ -5,28 +5,28 @@ import (
 	"inventory-service/internal/inventory"
 )
 
-type ProductService struct {
-	productRepository ProductRepository
+type InventoryService struct {
+	inventoryRepository InventoryRepository
 }
 
-func NewProductService(productRepository ProductRepository) *ProductService {
-	return &ProductService{productRepository: productRepository}
+func NewProductService(inventoryRepository InventoryRepository) *InventoryService {
+	return &InventoryService{inventoryRepository: inventoryRepository}
 }
 
-func (p *ProductService) CreateProduct(request CreateProductRequest) (*uuid.UUID, error) {
-	product, err := inventory.NewProduct(request.Name, request.Price, request.Quantity)
+func (service *InventoryService) CreateProduct(request CreateProductRequest) (*uuid.UUID, error) {
+	product, err := inventory.NewProduct(request.Title, request.Price, request.Quantity)
 	if err != nil {
 		return nil, err
 	}
-	err = p.productRepository.SaveProduct(product)
+	err = service.inventoryRepository.SaveProduct(product)
 	if err != nil {
 		return nil, err
 	}
 	return &product.Id, nil
 }
 
-func (p *ProductService) GetAllProducts() ([]ProductDetail, error) {
-	products, err := p.productRepository.GetAllProducts()
+func (service *InventoryService) GetAllProducts() ([]ProductDetail, error) {
+	products, err := service.inventoryRepository.GetAllProducts()
 	if err != nil {
 		return nil, err
 	}
