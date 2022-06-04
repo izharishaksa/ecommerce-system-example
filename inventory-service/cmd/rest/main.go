@@ -20,7 +20,7 @@ func main() {
 
 	productRepository := inventory.NewInMemoryRepository()
 	service := use_case.NewProductService(productRepository)
-	handler := Handler{service}
+	handler := NewHandler(service)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/products", handler.getProduct).Methods("GET")

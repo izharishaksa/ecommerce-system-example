@@ -12,6 +12,7 @@ type Product struct {
 	SalePrice    float64
 	AveragePrice float64
 	Stock        int
+	Sold         int
 }
 
 func NewProduct(title string, price float64, quantity int) (*Product, error) {
@@ -20,6 +21,7 @@ func NewProduct(title string, price float64, quantity int) (*Product, error) {
 		SalePrice:    0,
 		AveragePrice: 0,
 		Stock:        0,
+		Sold:         0,
 	}
 	if err := instance.SetTitle(title); err != nil {
 		return nil, err
