@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"inventory-service/config"
 	"inventory-service/internal/inventory"
 	"inventory-service/internal/use_case"
+	"lib"
 	"log"
 	"net/http"
 	"os"
@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
 
 	productRepository := inventory.NewInMemoryRepository()
 	service := use_case.NewProductService(productRepository)
@@ -44,7 +44,7 @@ func main() {
 	}
 }
 
-func startServer(ctx context.Context, httpHandler http.Handler, cfg config.Config) error {
+func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
 	errChan := make(chan error, 1)
 
 	go func() {
@@ -59,7 +59,7 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg config.Confi
 	}
 }
 
-func startHTTP(ctx context.Context, httpHandler http.Handler, cfg config.Config) error {
+func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
 	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
@@ -75,7 +75,7 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg config.Config)
 	return gracefulShutdown(ctx, server, cfg)
 }
 
-func gracefulShutdown(ctx context.Context, server *http.Server, cfg config.Config) error {
+func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) error {
 	interruption := make(chan os.Signal, 1)
 	defer log.Printf("%s is shutting down...", cfg.App.Name)
 

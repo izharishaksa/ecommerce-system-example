@@ -1,4 +1,4 @@
-package config
+package lib
 
 import (
 	"github.com/spf13/viper"
@@ -25,16 +25,6 @@ func getString(key string) string {
 func getStringOrPanic(key string) string {
 	checkKey(key)
 	return getString(key)
-}
-
-func getStringOrDefault(key, def string) string {
-	value := getString(key)
-
-	if value == "" {
-		return def
-	}
-
-	return value
 }
 
 func getIntOrDefault(key string, def int) int {
