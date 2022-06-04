@@ -3,7 +3,7 @@ name: Inventory Service
 on:
   push:
     paths:
-      - "inventory-service/"
+      - "inventory-service/*"
 
 jobs:
 
