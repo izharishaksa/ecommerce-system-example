@@ -14,7 +14,7 @@ func LoadConfigByFile(path, fileName, fileType string) Config {
 	viper.SetConfigName(fileName)
 	viper.SetConfigType(fileType)
 	viper.AddConfigPath(path)
-	//viper.AutomaticEnv()
+	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
 		fmt.Printf("Error reading config file, use automatic environment instead %s\n", err)
