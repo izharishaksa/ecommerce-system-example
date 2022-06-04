@@ -1,7 +1,7 @@
 package use_case
 
 type CreateProductRequest struct {
-	Name     string  `json:"name"`
+	Title    string  `json:"title"`
 	Price    float64 `json:"price"`
 	Quantity int     `json:"quantity"`
 }

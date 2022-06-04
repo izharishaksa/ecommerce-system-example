@@ -18,9 +18,9 @@ import (
 func main() {
 	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
 
-	productRepository := inventory.NewInMemoryRepository()
-	service := use_case.NewProductService(productRepository)
-	handler := NewHandler(service)
+	inventoryRepository := inventory.NewInMemoryRepository()
+	inventoryService := use_case.NewProductService(inventoryRepository)
+	handler := NewHandler(inventoryService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/products", handler.getProduct).Methods("GET")
