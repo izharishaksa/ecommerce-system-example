@@ -6,6 +6,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"inventory-service/config"
+	"inventory-service/internal/inventory"
+	"inventory-service/internal/use_case"
 	"log"
 	"net/http"
 	"os"
@@ -16,10 +18,13 @@ import (
 func main() {
 	cfg := config.Load()
 
-	handler := Handler{}
+	productRepository := inventory.NewInMemoryRepository()
+	service := use_case.NewProductService(productRepository)
+	handler := Handler{service}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/products", handler.createProduct).Methods("GET")
+	router.HandleFunc("/api/v1/products", handler.getProduct).Methods("GET")
+	router.HandleFunc("/api/v1/products", handler.createProduct).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},
@@ -55,7 +60,7 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg config.Confi
 }
 
 func startHTTP(ctx context.Context, httpHandler http.Handler, cfg config.Config) error {
-	log.Printf("starting %s at port %d:", cfg.App.Name, cfg.App.HTTPPort)
+	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
 		Handler: httpHandler,
