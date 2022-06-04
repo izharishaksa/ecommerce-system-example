@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  inventory-service:
+    build:
+      context: .
+      dockerfile: ./inventory-service/Dockerfile
+    ports:
+      - "4001:4001"
+    networks:
+      - wpg-network
+networks:
+  wpg-network:
+    driver: bridge
