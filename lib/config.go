@@ -1,4 +1,4 @@
-package config
+package lib
 
 import (
 	"fmt"
@@ -10,11 +10,11 @@ type Config struct {
 	Database DatabaseConfig
 }
 
-func Load() Config {
-	viper.SetConfigName("application")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./config")
-	viper.AutomaticEnv()
+func LoadConfigByFile(path, fileName, fileType string) Config {
+	viper.SetConfigName(fileName)
+	viper.SetConfigType(fileType)
+	viper.AddConfigPath(path)
+	//viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
 		fmt.Printf("Error reading config file, use automatic environment instead %s\n", err)
