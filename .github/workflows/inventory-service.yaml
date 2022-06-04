@@ -17,5 +17,5 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Test
+      - name: Running Test
         run: cd inventory-service && go test -v ./...
