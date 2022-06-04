@@ -3,11 +3,11 @@ name: Inventory Service
 on:
   push:
     paths:
-      - "inventory-service/*"
+      - "inventory-service/**"
 
 jobs:
 
-  test:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
