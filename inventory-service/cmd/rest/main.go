@@ -16,7 +16,19 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
+	mysqlConnection, err := lib.NewMySqlConnection(cfg.Database)
+	if err != nil {
+		log.Println(err)
+	} else {
+		err = mysqlConnection.Ping()
+		if err != nil {
+			log.Println(err)
+		} else {
+			log.Println("mysql connection success")
+		}
+	}
 
 	inventoryRepository := inventory.NewInMemoryRepository()
 	inventoryService := use_case.NewProductService(inventoryRepository)
@@ -37,7 +49,7 @@ func main() {
 	})
 	httpHandler := c.Handler(router)
 
-	err := startServer(context.Background(), httpHandler, cfg)
+	err = startServer(ctx, httpHandler, cfg)
 	if err != nil {
 		log.Fatal(err)
 		return
