@@ -2,13 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"inventory-service/internal/use_case"
 	"lib"
 	"net/http"
 )
 
 type ProductService interface {
-	CreateProduct(request use_case.CreateProductRequest) error
+	CreateProduct(request use_case.CreateProductRequest) (*uuid.UUID, error)
+	GetAllProducts() ([]use_case.ProductDetail, error)
 }
 
 type Handler struct {
@@ -26,10 +28,12 @@ func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), http.StatusBadRequest, nil)
 		return
 	}
-	err = h.productService.CreateProduct(request)
-	lib.WriteResponse(w, err, http.StatusCreated, nil)
+	productId, err := h.productService.CreateProduct(request)
+
+	lib.WriteResponse(w, err, http.StatusCreated, productId)
 }
 
 func (h Handler) getProduct(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ok"))
+	products, err := h.productService.GetAllProducts()
+	lib.WriteResponse(w, err, http.StatusOK, products)
 }
