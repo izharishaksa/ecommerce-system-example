@@ -19,7 +19,7 @@ EXPOSE 2001
 ENV APP_NAME="inventory-service"
 ENV APP_HTTP_PORT="4001"
 
-ENV DB_DSN="root:password@tcp(localhost:3306)/inventory?parseTime=true"
+ENV DB_DSN="root:password@tcp(inventory-database:3306)/inventory?parseTime=true"
 ENV DB_MAX_IDLE_CONNECTIONS="20"
 ENV DB_MAX_OPEN_CONNECTIONS="100"
 ENV DB_MAX_IDLE_DURATION_IN_SECS="60"
