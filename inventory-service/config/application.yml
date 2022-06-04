@@ -1,0 +1,8 @@
+APP_NAME: "inventory-service"
+APP_HTTP_PORT: "3001"
+
+DB_DSN: "root:password@tcp(localhost:3306)/inventory?parseTime=true"
+DB_MAX_IDLE_CONNECTIONS: "20"
+DB_MAX_OPEN_CONNECTIONS: "100"
+DB_MAX_IDLE_DURATION_IN_SECS: "60"
+DB_MAX_LIFE_TIME_DURATION_IN_SECS: "300"
