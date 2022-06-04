@@ -2,6 +2,7 @@ version: "3"
 
 services:
   inventory-service:
+    hostname: inventory-service
     build:
       context: .
       dockerfile: ./inventory-service/Dockerfile
@@ -9,6 +10,29 @@ services:
       - "4001:4001"
     networks:
       - wpg-network
+      - inventory-network
+    depends_on:
+      - inventory-database
+  inventory-database:
+    hostname: inventory-database
+    image: mysql:8.0.3
+    ports:
+      - "3306:3306"
+    networks:
+      - inventory-network
+    #    volumes:
+    #      - ./database/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=inventory
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_HOST_PORT=3306
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    restart: unless-stopped
 networks:
   wpg-network:
+    driver: bridge
+  inventory-network:
     driver: bridge
