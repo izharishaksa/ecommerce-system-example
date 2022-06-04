@@ -4,15 +4,10 @@ on:
   push:
     paths:
       - "inventory-service/"
-    branches: [ "main" ]
-  pull_request:
-    paths:
-      - "inventory-service/"
-    branches: [ "main" ]
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
