@@ -33,6 +33,5 @@ services:
     restart: unless-stopped
 networks:
   wpg-network:
-    driver: bridge
   inventory-network:
     driver: bridge
