@@ -55,7 +55,7 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg config.Confi
 }
 
 func startHTTP(ctx context.Context, httpHandler http.Handler, cfg config.Config) error {
-	log.Println("starting server at port :", cfg.App.HTTPPort)
+	log.Printf("starting %s at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
 		Handler: httpHandler,
@@ -67,12 +67,12 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg config.Config)
 		}
 	}()
 
-	return gracefulShutdown(ctx, server)
+	return gracefulShutdown(ctx, server, cfg)
 }
 
-func gracefulShutdown(ctx context.Context, server *http.Server) error {
+func gracefulShutdown(ctx context.Context, server *http.Server, cfg config.Config) error {
 	interruption := make(chan os.Signal, 1)
-	defer log.Println("server is shutting down...")
+	defer log.Printf("%s is shutting down...", cfg.App.Name)
 
 	signal.Notify(interruption, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-interruption
