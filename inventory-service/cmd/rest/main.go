@@ -31,7 +31,7 @@ func main() {
 	}
 
 	inventoryRepository := inventory.NewInMemoryRepository()
-	inventoryService := use_case.NewProductService(inventoryRepository)
+	inventoryService := use_case.NewInventoryService(inventoryRepository)
 	handler := NewHandler(inventoryService)
 
 	router := mux.NewRouter()

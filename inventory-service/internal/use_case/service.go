@@ -9,7 +9,7 @@ type InventoryService struct {
 	inventoryRepository InventoryRepository
 }
 
-func NewProductService(inventoryRepository InventoryRepository) *InventoryService {
+func NewInventoryService(inventoryRepository InventoryRepository) *InventoryService {
 	return &InventoryService{inventoryRepository: inventoryRepository}
 }
 
