@@ -25,15 +25,15 @@ func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 	var request use_case.CreateProductRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), http.StatusBadRequest, nil)
+		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), nil)
 		return
 	}
 	productId, err := h.inventoryService.CreateProduct(request)
 
-	lib.WriteResponse(w, err, http.StatusCreated, productId)
+	lib.WriteResponse(w, err, productId)
 }
 
-func (h Handler) getProduct(w http.ResponseWriter, r *http.Request) {
+func (h Handler) getProduct(w http.ResponseWriter, _ *http.Request) {
 	products, err := h.inventoryService.GetAllProducts()
-	lib.WriteResponse(w, err, http.StatusOK, products)
+	lib.WriteResponse(w, err, products)
 }
