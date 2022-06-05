@@ -1,23 +1,23 @@
+//go:build (darwin && cgo) || linux
+
 package lib
 
 import (
-	"time"
+	_ "database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
-type DatabaseConfig struct {
-	DSN                 string
-	MaxIdleConnections  int
-	MaxOpenConnections  int
-	MaxIdleDuration     time.Duration
-	MaxLifeTimeDuration time.Duration
-}
+const mysqlDriver = "mysql"
 
-func getDatabaseConfig() DatabaseConfig {
-	return DatabaseConfig{
-		DSN:                 getStringOrPanic("DB_DSN"),
-		MaxIdleConnections:  getIntOrDefault("DB_MAX_IDLE_CONNECTIONS", 20),
-		MaxOpenConnections:  getIntOrDefault("DB_MAX_OPEN_CONNECTIONS", 100),
-		MaxIdleDuration:     time.Duration(getIntOrDefault("DB_MAX_IDLE_DURATION_IN_SECS", 60)) * time.Second,
-		MaxLifeTimeDuration: time.Duration(getIntOrDefault("DB_MAX_LIFE_TIME_DURATION_IN_SECS", 300)) * time.Second,
+func NewMySqlConnection(cfg DatabaseConfig) (*sqlx.DB, error) {
+	dbConnection, err := sqlx.Open(mysqlDriver, cfg.DSN)
+	if err != nil {
+		return nil, err
 	}
+	dbConnection.SetConnMaxIdleTime(cfg.MaxIdleDuration)
+	dbConnection.SetMaxOpenConns(cfg.MaxOpenConnections)
+	dbConnection.SetConnMaxLifetime(cfg.MaxLifeTimeDuration)
+	dbConnection.SetMaxIdleConns(cfg.MaxIdleConnections)
+	return dbConnection, nil
 }
