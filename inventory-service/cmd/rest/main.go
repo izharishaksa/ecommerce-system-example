@@ -31,12 +31,13 @@ func main() {
 	}
 
 	inventoryRepository := inventory.NewInMemoryRepository()
-	inventoryService := use_case.NewProductService(inventoryRepository)
+	inventoryService := use_case.NewInventoryService(inventoryRepository)
 	handler := NewHandler(inventoryService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/products", handler.getProduct).Methods("GET")
 	router.HandleFunc("/api/v1/products", handler.createProduct).Methods("POST")
+	router.HandleFunc("/api/v1/stocks", handler.addProductStock).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},

@@ -9,7 +9,7 @@ type InventoryService struct {
 	inventoryRepository InventoryRepository
 }
 
-func NewProductService(inventoryRepository InventoryRepository) *InventoryService {
+func NewInventoryService(inventoryRepository InventoryRepository) *InventoryService {
 	return &InventoryService{inventoryRepository: inventoryRepository}
 }
 
@@ -41,4 +41,16 @@ func (service *InventoryService) GetAllProducts() ([]ProductDetail, error) {
 		})
 	}
 	return productDetails, nil
+}
+
+func (service *InventoryService) AddStock(request AddStockRequest) error {
+	product, err := service.inventoryRepository.FindProductById(request.ProductId)
+	if err != nil {
+		return err
+	}
+	err = product.AddStock(request.Quantity, request.AtPrice)
+	if err != nil {
+		return err
+	}
+	return service.inventoryRepository.SaveProduct(product)
 }
