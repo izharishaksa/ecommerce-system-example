@@ -30,3 +30,11 @@ func (c *Customer) SetName(name string) error {
 	c.Name = name
 	return nil
 }
+
+func (c *Customer) TopUp(amount float64) error {
+	if amount <= 0 {
+		return lib.NewErrBadRequest("amount must be greater than 0")
+	}
+	c.Balance += amount
+	return nil
+}
