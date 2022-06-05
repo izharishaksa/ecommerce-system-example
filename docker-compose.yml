@@ -34,6 +34,15 @@ services:
       - "4002:4002"
     networks:
       - wpg-network
+  order-service:
+    hostname: order
+    build:
+      context: .
+      dockerfile: ./order-service/Dockerfile
+    ports:
+      - "4003:4003"
+    networks:
+      - wpg-network
 networks:
   wpg-network:
     driver: bridge
