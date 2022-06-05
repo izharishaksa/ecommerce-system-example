@@ -18,7 +18,7 @@ import (
 func main() {
 	ctx := context.Background()
 	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
-	mysqlConnection, err := lib.NewMySqlConnection(cfg.Database)
+	mysqlConnection, err := lib.NewPostgresqlConnection(cfg.Database)
 	if err != nil {
 		log.Println(err)
 	} else {
