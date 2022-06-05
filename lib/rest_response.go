@@ -39,13 +39,15 @@ func successResponseWriter(w http.ResponseWriter, data interface{}, statusCode i
 	w.Write(responseBytes)
 }
 
-func WriteResponse(w http.ResponseWriter, err error, statusCode int, data any) {
+func WriteResponse(w http.ResponseWriter, err error, data any) {
 	switch err.(type) {
-	case *ErrNotFound, ErrNotFound, *ErrBadRequest, ErrBadRequest:
-		failResponseWriter(w, err, statusCode)
+	case *ErrNotFound, ErrNotFound:
+		failResponseWriter(w, err, http.StatusNotFound)
+	case *ErrBadRequest, ErrBadRequest:
+		failResponseWriter(w, err, http.StatusBadRequest)
 		return
 	case nil:
-		successResponseWriter(w, data, statusCode)
+		successResponseWriter(w, data, http.StatusOK)
 		return
 	default:
 		failResponseWriter(w, err, http.StatusInternalServerError)

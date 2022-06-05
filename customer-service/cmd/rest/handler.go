@@ -29,25 +29,25 @@ func (h Handler) registerCustomer(w http.ResponseWriter, r *http.Request) {
 	var request requestBody
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), http.StatusBadRequest, nil)
+		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), nil)
 		return
 	}
 	productId, err := h.customerService.RegisterCustomer(request.Name)
 	if err != nil {
-		lib.WriteResponse(w, err, http.StatusBadRequest, nil)
+		lib.WriteResponse(w, err, nil)
 		return
 	}
 
-	lib.WriteResponse(w, err, http.StatusCreated, productId)
+	lib.WriteResponse(w, err, productId)
 }
 
 func (h Handler) getCustomer(w http.ResponseWriter, _ *http.Request) {
 	customers, err := h.customerService.GetAllCustomers()
 	if err != nil {
-		lib.WriteResponse(w, err, http.StatusInternalServerError, nil)
+		lib.WriteResponse(w, err, nil)
 		return
 	}
-	lib.WriteResponse(w, err, http.StatusOK, customers)
+	lib.WriteResponse(w, err, customers)
 }
 
 func (h Handler) topUpBalance(w http.ResponseWriter, r *http.Request) {
@@ -58,13 +58,13 @@ func (h Handler) topUpBalance(w http.ResponseWriter, r *http.Request) {
 	var request requestBody
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), http.StatusBadRequest, nil)
+		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), nil)
 		return
 	}
 	err = h.customerService.TopUp(request.CustomerId, request.Amount)
 	if err != nil {
-		lib.WriteResponse(w, err, http.StatusBadRequest, nil)
+		lib.WriteResponse(w, err, nil)
 		return
 	}
-	lib.WriteResponse(w, err, http.StatusOK, nil)
+	lib.WriteResponse(w, err, nil)
 }
