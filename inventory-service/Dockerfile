@@ -14,12 +14,12 @@ RUN CGO_ENABLED=0 go build -o /usr/bin/inventory-service ./cmd/rest
 FROM alpine
 
 COPY --from=builder /usr/bin/inventory-service /usr/bin/inventory-service
-EXPOSE 2001
+EXPOSE 4001
 
 ENV APP_NAME="inventory-service"
 ENV APP_HTTP_PORT="4001"
 
-ENV DB_DSN="root:password@tcp(inventory-database:3306)/inventory?parseTime=true"
+ENV DB_DSN="postgres://postgres:postgres@inventory-database-host:5432/inventory?sslmode=disable"
 ENV DB_MAX_IDLE_CONNECTIONS="20"
 ENV DB_MAX_OPEN_CONNECTIONS="100"
 ENV DB_MAX_IDLE_DURATION_IN_SECS="60"
