@@ -26,12 +26,21 @@ services:
       - POSTGRES_DB=inventory
     restart: on-failure
   customer-service:
-    hostname: customer
+    hostname: customer-host
     build:
       context: .
       dockerfile: ./customer-service/Dockerfile
     ports:
       - "4002:4002"
+    networks:
+      - wpg-network
+  order-service:
+    hostname: order-host
+    build:
+      context: .
+      dockerfile: ./order-service/Dockerfile
+    ports:
+      - "4003:4003"
     networks:
       - wpg-network
 networks:
