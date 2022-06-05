@@ -2,7 +2,7 @@ version: "3"
 
 services:
   inventory-service:
-    hostname: inventory-service
+    hostname: inventory-host
     build:
       context: .
       dockerfile: ./inventory-service/Dockerfile
@@ -14,24 +14,28 @@ services:
     depends_on:
       - inventory-database
   inventory-database:
-    hostname: inventory-database
-    image: mysql:8.0.3
+    hostname: inventory-database-host
+    image: postgres:8.4
     ports:
-      - "3306:3306"
+      - "5432:5432"
     networks:
       - inventory-network
-    #    volumes:
-    #      - ./database/data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=inventory
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=password
-      - MYSQL_ROOT_HOST=%
-      - MYSQL_ROOT_HOST_PORT=3306
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    restart: unless-stopped
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=inventory
+    restart: on-failure
+  customer-service:
+    hostname: customer
+    build:
+      context: .
+      dockerfile: ./customer-service/Dockerfile
+    ports:
+      - "4002:4002"
+    networks:
+      - wpg-network
 networks:
   wpg-network:
+    driver: bridge
   inventory-network:
     driver: bridge
