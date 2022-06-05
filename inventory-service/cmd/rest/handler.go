@@ -11,6 +11,7 @@ import (
 type InventoryService interface {
 	CreateProduct(request use_case.CreateProductRequest) (*uuid.UUID, error)
 	GetAllProducts() ([]use_case.ProductDetail, error)
+	AddStock(request use_case.AddStockRequest) error
 }
 
 type Handler struct {
@@ -36,4 +37,15 @@ func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 func (h Handler) getProduct(w http.ResponseWriter, _ *http.Request) {
 	products, err := h.inventoryService.GetAllProducts()
 	lib.WriteResponse(w, err, products)
+}
+
+func (h Handler) addProductStock(w http.ResponseWriter, r *http.Request) {
+	var request use_case.AddStockRequest
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), nil)
+		return
+	}
+	err = h.inventoryService.AddStock(request)
+	lib.WriteResponse(w, err, nil)
 }
