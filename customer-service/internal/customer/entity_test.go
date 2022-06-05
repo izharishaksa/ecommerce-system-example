@@ -8,7 +8,8 @@ import (
 
 func TestNewCustomer(t *testing.T) {
 	type args struct {
-		name string
+		name  string
+		email string
 	}
 	tests := []struct {
 		name    string
@@ -19,18 +20,38 @@ func TestNewCustomer(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				name: "customer name",
+				name:  "customer name",
+				email: "izharishaksa@gmail.com",
 			},
 			want: &Customer{
-				Id:   uuid.New(),
-				Name: "customer name",
+				Id:    uuid.New(),
+				Name:  "customer name",
+				Email: "izharishaksa@gmail.com",
 			},
 			wantErr: false,
 		},
 		{
-			name: "failed",
+			name: "failed_name",
 			args: args{
 				name: "",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "failed_email",
+			args: args{
+				name:  "Izhari Ishak Aksa",
+				email: "email",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "failed_empty_email",
+			args: args{
+				name:  "Izhari Ishak Aksa",
+				email: "",
 			},
 			want:    nil,
 			wantErr: true,
@@ -38,7 +59,7 @@ func TestNewCustomer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewCustomer(tt.args.name)
+			got, err := NewCustomer(tt.args.name, tt.args.email)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewCustomer() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -47,6 +68,7 @@ func TestNewCustomer(t *testing.T) {
 				assert.NotNil(t, got)
 				assert.Nil(t, err)
 				assert.Equal(t, tt.args.name, got.Name)
+				assert.Equal(t, tt.args.email, got.Email)
 			}
 		})
 	}
