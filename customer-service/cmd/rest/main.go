@@ -36,6 +36,8 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/customers", handler.registerCustomer).Methods("POST")
+	router.HandleFunc("/api/v1/customers", handler.getCustomer).Methods("GET")
+	router.HandleFunc("/api/v1/topups", handler.topUpBalance).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},
