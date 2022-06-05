@@ -13,8 +13,8 @@ func NewCustomerService(customerRepository CustomerRepository) *CustomerService 
 	return &CustomerService{customerRepository: customerRepository}
 }
 
-func (service *CustomerService) RegisterCustomer(name string) (*uuid.UUID, error) {
-	customerInstance, err := customer.NewCustomer(name)
+func (service *CustomerService) RegisterCustomer(name, email string) (*uuid.UUID, error) {
+	customerInstance, err := customer.NewCustomer(name, email)
 	if err != nil {
 		return nil, err
 	}

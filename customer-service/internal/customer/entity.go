@@ -3,20 +3,26 @@ package customer
 import (
 	"github.com/google/uuid"
 	"lib"
+	"net/mail"
 	"strings"
 )
 
 type Customer struct {
 	Id      uuid.UUID
 	Name    string
+	Email   string
 	Balance float64
 }
 
-func NewCustomer(name string) (*Customer, error) {
+func NewCustomer(name, email string) (*Customer, error) {
 	instance := &Customer{
 		Id: uuid.New(),
 	}
 	err := instance.SetName(name)
+	if err != nil {
+		return nil, err
+	}
+	err = instance.SetEmail(email)
 	if err != nil {
 		return nil, err
 	}
@@ -28,6 +34,18 @@ func (c *Customer) SetName(name string) error {
 		return lib.NewErrBadRequest("name cannot be empty")
 	}
 	c.Name = name
+	return nil
+}
+
+func (c *Customer) SetEmail(email string) error {
+	if strings.TrimSpace(email) == "" {
+		return lib.NewErrBadRequest("email cannot be empty")
+	}
+	_, err := mail.ParseAddress(email)
+	if err != nil {
+		return lib.NewErrBadRequest("email is invalid")
+	}
+	c.Email = email
 	return nil
 }
 

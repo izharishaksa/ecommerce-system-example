@@ -9,7 +9,7 @@ import (
 )
 
 type CustomerService interface {
-	RegisterCustomer(name string) (*uuid.UUID, error)
+	RegisterCustomer(name, email string) (*uuid.UUID, error)
 	GetAllCustomers() ([]use_case.CustomerDetail, error)
 	TopUp(customerId uuid.UUID, amount float64) error
 }
@@ -24,7 +24,8 @@ func NewHandler(customerService CustomerService) *Handler {
 
 func (h Handler) registerCustomer(w http.ResponseWriter, r *http.Request) {
 	type requestBody struct {
-		Name string `json:"name"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
 	}
 	var request requestBody
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -32,7 +33,7 @@ func (h Handler) registerCustomer(w http.ResponseWriter, r *http.Request) {
 		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), nil)
 		return
 	}
-	productId, err := h.customerService.RegisterCustomer(request.Name)
+	productId, err := h.customerService.RegisterCustomer(request.Name, request.Email)
 	if err != nil {
 		lib.WriteResponse(w, err, nil)
 		return

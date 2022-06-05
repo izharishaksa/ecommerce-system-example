@@ -1,6 +1,7 @@
 package customer
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"lib"
 )
@@ -16,6 +17,11 @@ func NewInMemoryRepository() *InMemoryRepository {
 }
 
 func (repo InMemoryRepository) SaveCustomer(customer *Customer) error {
+	for _, c := range repo.customers {
+		if c.Email == customer.Email {
+			return lib.NewErrBadRequest(fmt.Sprintf("customer with email %s already exists", customer.Email))
+		}
+	}
 	repo.customers[customer.Id] = customer
 	return nil
 }
