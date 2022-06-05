@@ -2,9 +2,7 @@
 Project page: https://github.com/users/izharishaksa/projects/6/views/1
 
 ## Problem description
-
-## Dev environment setup
-
-## Build instructions
+Simple e-commerce system.
 
 ## Run instructions
+1. run `docker-compose up`
