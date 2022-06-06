@@ -1,4 +1,4 @@
-APP_NAME: "inventory-service"
+APP_NAME: "inventory-rest-service"
 APP_HTTP_PORT: "4001"
 
 DB_DSN: "root:password@tcp(localhost:3306)/inventory?parseTime=true"
