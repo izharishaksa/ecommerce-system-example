@@ -27,10 +27,7 @@ func (service orderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID,
 	items := make([]order.Item, len(request.Items))
 	for i, item := range request.Items {
 		productItemIds[i] = item.ProductId
-		items[i] = order.Item{
-			ProductId: item.ProductId,
-			Quantity:  item.Quantity,
-		}
+		items[i] = item.toOrderItem()
 	}
 	productDetails, err := service.inventoryRepository.GetProductAvailability(productItemIds)
 	if err != nil {

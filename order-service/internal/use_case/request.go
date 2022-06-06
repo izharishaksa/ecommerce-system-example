@@ -2,14 +2,22 @@ package use_case
 
 import (
 	"github.com/google/uuid"
+	"order-service/internal/order"
 )
 
 type CreateOrderRequest struct {
-	CustomerId uuid.UUID   `json:"customer_id"`
-	Items      []OrderItem `json:"items"`
+	CustomerId uuid.UUID          `json:"customer_id"`
+	Items      []OrderItemRequest `json:"items"`
 }
 
-type OrderItem struct {
+type OrderItemRequest struct {
 	ProductId uuid.UUID `json:"product_id"`
 	Quantity  int       `json:"quantity"`
+}
+
+func (r OrderItemRequest) toOrderItem() order.Item {
+	return order.Item{
+		ProductId: r.ProductId,
+		Quantity:  r.Quantity,
+	}
 }
