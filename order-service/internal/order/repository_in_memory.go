@@ -1,16 +1,16 @@
 package order
 
-type InMemoryRepository struct {
+type inMemoryRepository struct {
 	orders map[string]*Order
 }
 
-func NewInMemoryRepository() *InMemoryRepository {
-	return &InMemoryRepository{
+func NewInMemoryRepository() Repository {
+	return &inMemoryRepository{
 		orders: make(map[string]*Order),
 	}
 }
 
-func (repo InMemoryRepository) SaveOrder(order *Order) error {
-	//TODO implement me
-	panic("implement me")
+func (repo inMemoryRepository) SaveOrder(order *Order) error {
+	repo.orders[order.Id.String()] = order
+	return nil
 }
