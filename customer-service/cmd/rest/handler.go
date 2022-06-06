@@ -8,17 +8,11 @@ import (
 	"net/http"
 )
 
-type CustomerService interface {
-	RegisterCustomer(name, email string) (*uuid.UUID, error)
-	GetAllCustomers() ([]use_case.CustomerDetail, error)
-	TopUp(customerId uuid.UUID, amount float64) error
-}
-
 type Handler struct {
-	customerService CustomerService
+	customerService use_case.CustomerService
 }
 
-func NewHandler(customerService CustomerService) *Handler {
+func NewHandler(customerService use_case.CustomerService) *Handler {
 	return &Handler{customerService: customerService}
 }
 
