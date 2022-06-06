@@ -1,4 +1,4 @@
-package main
+package rest
 
 import (
 	"context"
@@ -15,21 +15,8 @@ import (
 	"syscall"
 )
 
-func main() {
-	ctx := context.Background()
-	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
-	mysqlConnection, err := lib.NewPostgresqlConnection(cfg.Database)
-	if err != nil {
-		log.Println(err)
-	} else {
-		err = mysqlConnection.Ping()
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Println("mysql connection success")
-		}
-	}
-
+func StartServer(cfg lib.Config) error {
+	ctx := context.TODO()
 	inventoryRepository := inventory.NewInMemoryRepository()
 	inventoryService := use_case.NewInventoryService(inventoryRepository)
 	handler := NewHandler(inventoryService)
@@ -50,11 +37,11 @@ func main() {
 	})
 	httpHandler := c.Handler(router)
 
-	err = startServer(ctx, httpHandler, cfg)
+	err := startServer(ctx, httpHandler, cfg)
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
+	return nil
 }
 
 func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
@@ -81,7 +68,7 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			panic(err)
+			log.Fatalf("%s failed to start: %v", cfg.App.Name, err)
 		}
 	}()
 

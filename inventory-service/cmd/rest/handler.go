@@ -1,24 +1,17 @@
-package main
+package rest
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"inventory-service/internal/use_case"
 	"lib"
 	"net/http"
 )
 
-type InventoryService interface {
-	CreateProduct(request use_case.CreateProductRequest) (*uuid.UUID, error)
-	GetAllProducts() ([]use_case.ProductDetail, error)
-	AddStock(request use_case.AddStockRequest) error
-}
-
 type Handler struct {
-	inventoryService InventoryService
+	inventoryService use_case.InventoryServiceClient
 }
 
-func NewHandler(inventoryService InventoryService) *Handler {
+func NewHandler(inventoryService use_case.InventoryServiceClient) *Handler {
 	return &Handler{inventoryService: inventoryService}
 }
 

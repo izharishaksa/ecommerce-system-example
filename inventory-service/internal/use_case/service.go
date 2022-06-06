@@ -5,15 +5,21 @@ import (
 	"inventory-service/internal/inventory"
 )
 
-type InventoryService struct {
+type InventoryServiceClient interface {
+	CreateProduct(CreateProductRequest) (*uuid.UUID, error)
+	GetAllProducts() ([]ProductDetail, error)
+	AddStock(AddStockRequest) error
+}
+
+type inventoryService struct {
 	inventoryRepository InventoryRepository
 }
 
-func NewInventoryService(inventoryRepository InventoryRepository) *InventoryService {
-	return &InventoryService{inventoryRepository: inventoryRepository}
+func NewInventoryService(inventoryRepository InventoryRepository) InventoryServiceClient {
+	return &inventoryService{inventoryRepository: inventoryRepository}
 }
 
-func (service *InventoryService) CreateProduct(request CreateProductRequest) (*uuid.UUID, error) {
+func (service *inventoryService) CreateProduct(request CreateProductRequest) (*uuid.UUID, error) {
 	product, err := inventory.NewProduct(request.Title, request.Price, request.Quantity)
 	if err != nil {
 		return nil, err
@@ -25,7 +31,7 @@ func (service *InventoryService) CreateProduct(request CreateProductRequest) (*u
 	return &product.Id, nil
 }
 
-func (service *InventoryService) GetAllProducts() ([]ProductDetail, error) {
+func (service *inventoryService) GetAllProducts() ([]ProductDetail, error) {
 	products, err := service.inventoryRepository.GetAllProducts()
 	if err != nil {
 		return nil, err
@@ -43,7 +49,7 @@ func (service *InventoryService) GetAllProducts() ([]ProductDetail, error) {
 	return productDetails, nil
 }
 
-func (service *InventoryService) AddStock(request AddStockRequest) error {
+func (service *inventoryService) AddStock(request AddStockRequest) error {
 	product, err := service.inventoryRepository.FindProductById(request.ProductId)
 	if err != nil {
 		return err
