@@ -9,14 +9,14 @@ RUN go mod download
 
 WORKDIR /app/customer-service
 RUN go mod download
-RUN CGO_ENABLED=0 go build -o /usr/bin/customer-service ./cmd/rest
+RUN CGO_ENABLED=0 go build -o /usr/bin/customer-service ./cmd
 
 FROM alpine
 
 COPY --from=builder /usr/bin/customer-service /usr/bin/customer-service
 EXPOSE 4002
 
-ENV APP_NAME="customer-service"
+ENV APP_NAME="customer-rest-service"
 ENV APP_HTTP_PORT="4002"
 
 ENV DB_DSN="postgres://postgres:postgres@customer-database-host:5432/customer?sslmode=disable"

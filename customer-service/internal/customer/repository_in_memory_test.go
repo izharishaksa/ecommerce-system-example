@@ -55,7 +55,7 @@ func TestInMemoryRepository_SaveCustomer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := InMemoryRepository{
+			repo := inMemoryRepository{
 				customers: tt.fields.customers,
 			}
 			tt.wantErr(t, repo.SaveCustomer(tt.args.customer), fmt.Sprintf("SaveCustomer(%v)", tt.args.customer))

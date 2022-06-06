@@ -1,4 +1,4 @@
-package main
+package rest
 
 import (
 	"context"
@@ -15,29 +15,16 @@ import (
 	"syscall"
 )
 
-func main() {
+func Run(cfg lib.Config) error {
 	ctx := context.Background()
-	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
-	mysqlConnection, err := lib.NewPostgresqlConnection(cfg.Database)
-	if err != nil {
-		log.Println(err)
-	} else {
-		err = mysqlConnection.Ping()
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Println("mysql connection success")
-		}
-	}
-
 	customerRepository := customer.NewInMemoryRepository()
 	customerService := use_case.NewCustomerService(customerRepository)
 	handler := NewHandler(customerService)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/customers", handler.registerCustomer).Methods("POST")
-	router.HandleFunc("/api/v1/customers", handler.getCustomer).Methods("GET")
-	router.HandleFunc("/api/v1/topups", handler.topUpBalance).Methods("POST")
+	router.HandleFunc("/api/v1/customers", handler.RegisterCustomer).Methods("POST")
+	router.HandleFunc("/api/v1/customers", handler.GetCustomer).Methods("GET")
+	router.HandleFunc("/api/v1/topups", handler.TopUpBalance).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},
@@ -50,11 +37,11 @@ func main() {
 	})
 	httpHandler := c.Handler(router)
 
-	err = startServer(ctx, httpHandler, cfg)
+	err := startServer(ctx, httpHandler, cfg)
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
+	return nil
 }
 
 func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
