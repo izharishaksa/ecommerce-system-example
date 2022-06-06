@@ -5,17 +5,17 @@ import (
 	"inventory-service/internal/inventory"
 )
 
-type InventoryServiceClient interface {
+type InventoryService interface {
 	CreateProduct(CreateProductRequest) (*uuid.UUID, error)
 	GetAllProducts() ([]ProductDetail, error)
 	AddStock(AddStockRequest) error
 }
 
 type inventoryService struct {
-	inventoryRepository InventoryRepository
+	inventoryRepository inventory.Repository
 }
 
-func NewInventoryService(inventoryRepository InventoryRepository) InventoryServiceClient {
+func NewInventoryService(inventoryRepository inventory.Repository) InventoryService {
 	return &inventoryService{inventoryRepository: inventoryRepository}
 }
 
