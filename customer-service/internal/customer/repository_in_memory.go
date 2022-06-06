@@ -6,17 +6,17 @@ import (
 	"lib"
 )
 
-type InMemoryRepository struct {
+type inMemoryRepository struct {
 	customers map[uuid.UUID]*Customer
 }
 
-func NewInMemoryRepository() *InMemoryRepository {
-	return &InMemoryRepository{
+func NewInMemoryRepository() Repository {
+	return &inMemoryRepository{
 		customers: make(map[uuid.UUID]*Customer),
 	}
 }
 
-func (repo InMemoryRepository) SaveCustomer(customer *Customer) error {
+func (repo inMemoryRepository) SaveCustomer(customer *Customer) error {
 	for _, c := range repo.customers {
 		if c.Email == customer.Email {
 			return lib.NewErrBadRequest(fmt.Sprintf("customer with email %s already exists", customer.Email))
@@ -26,7 +26,7 @@ func (repo InMemoryRepository) SaveCustomer(customer *Customer) error {
 	return nil
 }
 
-func (repo InMemoryRepository) GetCustomer() ([]Customer, error) {
+func (repo inMemoryRepository) GetCustomer() ([]Customer, error) {
 	customers := make([]Customer, 0)
 	for _, customer := range repo.customers {
 		customers = append(customers, *customer)
@@ -34,7 +34,7 @@ func (repo InMemoryRepository) GetCustomer() ([]Customer, error) {
 	return customers, nil
 }
 
-func (repo InMemoryRepository) FindCustomerById(id uuid.UUID) (*Customer, error) {
+func (repo inMemoryRepository) FindCustomerById(id uuid.UUID) (*Customer, error) {
 	customer, ok := repo.customers[id]
 	if !ok {
 		return nil, lib.NewErrNotFound("customer not found")
@@ -42,7 +42,7 @@ func (repo InMemoryRepository) FindCustomerById(id uuid.UUID) (*Customer, error)
 	return customer, nil
 }
 
-func (repo InMemoryRepository) UpdateBalance(customer *Customer) error {
+func (repo inMemoryRepository) UpdateBalance(customer *Customer) error {
 	_, ok := repo.customers[customer.Id]
 	if !ok {
 		return lib.NewErrNotFound("customer not found")
