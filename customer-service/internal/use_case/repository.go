@@ -9,4 +9,5 @@ type CustomerRepository interface {
 	SaveCustomer(customer *customer.Customer) error
 	GetCustomer() ([]customer.Customer, error)
 	FindCustomerById(id uuid.UUID) (*customer.Customer, error)
+	UpdateBalance(customer *customer.Customer) error
 }
