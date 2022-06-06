@@ -41,3 +41,12 @@ func (repo InMemoryRepository) FindCustomerById(id uuid.UUID) (*Customer, error)
 	}
 	return customer, nil
 }
+
+func (repo InMemoryRepository) UpdateBalance(customer *Customer) error {
+	_, ok := repo.customers[customer.Id]
+	if !ok {
+		return lib.NewErrNotFound("customer not found")
+	}
+	repo.customers[customer.Id].Balance = customer.Balance
+	return nil
+}
