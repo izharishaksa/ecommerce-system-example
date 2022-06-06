@@ -9,6 +9,7 @@ import (
 type Config struct {
 	App      AppConfig
 	Database DatabaseConfig
+	Kafka    string
 }
 
 type AppConfig struct {
@@ -54,5 +55,6 @@ func LoadConfigByFile(path, fileName, fileType string) Config {
 	return Config{
 		App:      getAppConfig(),
 		Database: getDatabaseConfig(),
+		Kafka:    getStringOrPanic("KAFKA_BROKERS"),
 	}
 }
