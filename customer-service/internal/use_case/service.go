@@ -50,5 +50,5 @@ func (service *CustomerService) TopUp(customerId uuid.UUID, amount float64) erro
 	if err != nil {
 		return err
 	}
-	return service.customerRepository.SaveCustomer(customerInstance)
+	return service.customerRepository.UpdateBalance(customerInstance)
 }
