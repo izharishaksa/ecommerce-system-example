@@ -1,6 +1,28 @@
 version: "3"
 
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-network
   inventory-service:
     hostname: inventory-host
     build:
@@ -8,11 +30,14 @@ services:
       dockerfile: ./inventory-service/Dockerfile
     ports:
       - "4001:4001"
+      - "6001:6001"
     networks:
       - wpg-network
       - inventory-network
+      - kafka-network
     depends_on:
       - inventory-database
+      - kafka
   inventory-database:
     hostname: inventory-database-host
     image: postgres:8.4
@@ -34,6 +59,9 @@ services:
       - "4002:4002"
     networks:
       - wpg-network
+      - kafka-network
+    depends_on:
+      - kafka
   order-service:
     hostname: order-host
     build:
@@ -43,8 +71,13 @@ services:
       - "4003:4003"
     networks:
       - wpg-network
+      - kafka-network
+    depends_on:
+      - kafka
 networks:
   wpg-network:
     driver: bridge
   inventory-network:
+    driver: bridge
+  kafka-network:
     driver: bridge
