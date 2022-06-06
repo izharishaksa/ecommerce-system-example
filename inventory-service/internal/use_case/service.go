@@ -38,13 +38,7 @@ func (service *inventoryService) GetAllProducts() ([]ProductDetail, error) {
 	}
 	var productDetails []ProductDetail
 	for _, product := range products {
-		productDetails = append(productDetails, ProductDetail{
-			ID:        product.Id,
-			Title:     product.Title,
-			SalePrice: product.SalePrice,
-			Stock:     product.Stock,
-			Sold:      product.Sold,
-		})
+		productDetails = append(productDetails, fromProductToProductDetail(product))
 	}
 	return productDetails, nil
 }
