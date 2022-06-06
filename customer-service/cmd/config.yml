@@ -1,4 +1,4 @@
-APP_NAME: "customer-service"
+APP_NAME: "customer-rest-service"
 APP_HTTP_PORT: "4002"
 
 DB_DSN: "root:password@tcp(localhost:3306)/customer?parseTime=true"
