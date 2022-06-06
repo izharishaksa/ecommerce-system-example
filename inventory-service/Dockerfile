@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 go build -o /usr/bin/inventory-service ./cmd
 FROM alpine
 
 COPY --from=builder /usr/bin/inventory-service /usr/bin/inventory-service
-EXPOSE 4001
+EXPOSE 4001 6001
 
 ENV APP_NAME="inventory-service"
 ENV APP_HTTP_PORT="4001"
