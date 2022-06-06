@@ -1,4 +1,4 @@
-package main
+package rest
 
 import (
 	"context"
@@ -16,29 +16,15 @@ import (
 	"syscall"
 )
 
-func main() {
-
+func Run(cfg lib.Config) error {
 	ctx := context.Background()
-	cfg := lib.LoadConfigByFile("./cmd/rest/", "config", "yaml")
-	mysqlConnection, err := lib.NewPostgresqlConnection(cfg.Database)
-	if err != nil {
-		log.Println(err)
-	} else {
-		err = mysqlConnection.Ping()
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Println("mysql connection success")
-		}
-	}
-
-	inventoryRepository := inventory.NewApiRepository()
 	orderRepository := order.NewInMemoryRepository()
+	inventoryRepository := inventory.NewApiRepository()
 	orderService := use_case.NewOrderService(orderRepository, inventoryRepository)
-	handler := NewHandler(orderService)
+	requestHandler := NewHandler(orderService)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/orders", handler.createOrder).Methods("POST")
+	router.HandleFunc("/api/v1/orders", requestHandler.CreateOrder).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},
@@ -51,11 +37,11 @@ func main() {
 	})
 	httpHandler := c.Handler(router)
 
-	err = startServer(ctx, httpHandler, cfg)
+	err := startServer(ctx, httpHandler, cfg)
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
+	return nil
 }
 
 func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {

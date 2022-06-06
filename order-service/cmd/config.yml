@@ -1,4 +1,4 @@
-APP_NAME: "order-service"
+APP_NAME: "order-rest-service"
 APP_HTTP_PORT: "4003"
 
 DB_DSN: "root:password@tcp(localhost:3306)/order?parseTime=true"
