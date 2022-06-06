@@ -2,13 +2,18 @@ version: "3"
 
 services:
   zookeeper:
+    hostname: zookeeper-host
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "22181:2181"
+    networks:
+      - kafka-network
+    restart: on-failure
   kafka:
+    hostname: kafka-host
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
@@ -16,13 +21,16 @@ services:
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-host:2181
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - kafka-network
+    restart: on-failure
   inventory-service:
     hostname: inventory-host
     build:
@@ -38,6 +46,9 @@ services:
     depends_on:
       - inventory-database
       - kafka
+    restart: on-failure
+    environment:
+      KAFKA_BROKERS: "kafka-host:9092"
   inventory-database:
     hostname: inventory-database-host
     image: postgres:8.4
@@ -62,6 +73,9 @@ services:
       - kafka-network
     depends_on:
       - kafka
+    restart: on-failure
+    environment:
+      KAFKA_BROKERS: "kafka-host:9092"
   order-service:
     hostname: order-host
     build:
@@ -74,6 +88,16 @@ services:
       - kafka-network
     depends_on:
       - kafka
+    environment:
+      APP_NAME: "order-rest-service"
+      APP_HTTP_PORT: "4003"
+      DB_DSN: "postgres://postgres:postgres@order-database-host:5432/order?sslmode=disable"
+      DB_MAX_IDLE_CONNECTIONS: "20"
+      DB_MAX_OPEN_CONNECTIONS: "100"
+      DB_MAX_IDLE_DURATION_IN_SECS: "60"
+      DB_MAX_LIFE_TIME_DURATION_IN_SECS: "300"
+      KAFKA_BROKERS: "kafka-host:9092"
+    restart: on-failure
 networks:
   wpg-network:
     driver: bridge
