@@ -38,11 +38,7 @@ func (service *customerService) GetAllCustomers() ([]CustomerDetail, error) {
 	}
 	customerDetails := make([]CustomerDetail, 0)
 	for _, cust := range customers {
-		customerDetails = append(customerDetails, CustomerDetail{
-			ID:      cust.Id,
-			Name:    cust.Name,
-			Balance: cust.Balance,
-		})
+		customerDetails = append(customerDetails, fromCustomerToCustomerDetail(cust))
 	}
 	return customerDetails, nil
 }
