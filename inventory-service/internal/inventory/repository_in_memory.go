@@ -28,10 +28,10 @@ func (repo *inMemoryRepository) FindProductById(id uuid.UUID) (*Product, error) 
 	return product, nil
 }
 
-func (repo *inMemoryRepository) GetAllProducts() ([]*Product, error) {
-	var products []*Product
+func (repo *inMemoryRepository) GetAllProducts() ([]Product, error) {
+	var products []Product
 	for _, product := range repo.products {
-		products = append(products, product)
+		products = append(products, *product)
 	}
 	return products, nil
 }
