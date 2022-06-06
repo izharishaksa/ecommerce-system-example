@@ -5,22 +5,34 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"github.com/segmentio/kafka-go"
 	"lib"
 	"log"
+	"net"
 	"net/http"
 	"order-service/internal/inventory"
 	"order-service/internal/order"
 	"order-service/internal/use_case"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 )
 
 func Run(cfg lib.Config) error {
 	ctx := context.Background()
+	var err error
+
+	err = setKafkaTopic(cfg)
+
+	kafkaWriter := &kafka.Writer{
+		Addr:                   kafka.TCP(cfg.Kafka),
+		AllowAutoTopicCreation: true,
+	}
+
 	orderRepository := order.NewInMemoryRepository()
 	inventoryRepository := inventory.NewApiRepository()
-	orderService := use_case.NewOrderService(orderRepository, inventoryRepository)
+	orderService := use_case.NewOrderService(orderRepository, inventoryRepository, kafkaWriter)
 	requestHandler := NewHandler(orderService)
 
 	router := mux.NewRouter()
@@ -37,10 +49,42 @@ func Run(cfg lib.Config) error {
 	})
 	httpHandler := c.Handler(router)
 
-	err := startServer(ctx, httpHandler, cfg)
+	err = startServer(ctx, httpHandler, cfg)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func setKafkaTopic(cfg lib.Config) error {
+	conn, err := kafka.Dial("tcp", cfg.Kafka)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	controller, err := conn.Controller()
+	if err != nil {
+		panic(err.Error())
+	}
+	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		panic(err.Error())
+	}
+	defer controllerConn.Close()
+
+	topicConfigs := []kafka.TopicConfig{
+		{Topic: use_case.OrderStatusPlacedTopic, NumPartitions: 1, ReplicationFactor: 1},
+		{Topic: use_case.OrderStatusCreatedTopic, NumPartitions: 1, ReplicationFactor: 1},
+		{Topic: use_case.OrderStatusCanceledTopic, NumPartitions: 1, ReplicationFactor: 1},
+		{Topic: use_case.OrderStatusPaidTopic, NumPartitions: 1, ReplicationFactor: 1},
+	}
+
+	err = controllerConn.CreateTopics(topicConfigs...)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	return nil
 }
 

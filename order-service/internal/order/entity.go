@@ -1,7 +1,6 @@
 package order
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"lib"
 	"order-service/internal/inventory"
@@ -32,19 +31,19 @@ type Item struct {
 func PlaceOrder(customerId uuid.UUID, items []Item, productDetail []inventory.ProductDetail) (*Order, error) {
 	totalPrice := 0.0
 	for _, item := range items {
-		isAvailable := false
+		//isAvailable := false
 		for _, product := range productDetail {
 			if item.ProductId == product.ProductId {
-				isAvailable = true
+				//isAvailable = true
 				if product.Stock < item.Quantity {
 					return nil, lib.NewErrBadRequest("Not enough stock")
 				}
 				totalPrice += product.CurrentPrice * float64(item.Quantity)
 			}
 		}
-		if !isAvailable {
-			return nil, lib.NewErrBadRequest(fmt.Sprintf("Product %s is not found", item.ProductId))
-		}
+		//if !isAvailable {
+		//	return nil, lib.NewErrBadRequest(fmt.Sprintf("Product %s is not found", item.ProductId))
+		//}
 	}
 	order := &Order{
 		Id:         uuid.New(),
