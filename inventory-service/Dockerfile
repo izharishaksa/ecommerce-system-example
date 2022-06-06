@@ -9,7 +9,7 @@ RUN go mod download
 
 WORKDIR /app/inventory-service
 RUN go mod download
-RUN CGO_ENABLED=0 go build -o /usr/bin/inventory-service ./cmd/rest
+RUN CGO_ENABLED=0 go build -o /usr/bin/inventory-service ./cmd
 
 FROM alpine
 
