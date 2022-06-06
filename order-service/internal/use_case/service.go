@@ -1,9 +1,19 @@
 package use_case
 
 import (
+	"context"
+	"fmt"
 	"github.com/google/uuid"
+	"github.com/segmentio/kafka-go"
 	"order-service/internal/inventory"
 	"order-service/internal/order"
+)
+
+const (
+	OrderStatusPlacedTopic   = "ORDER_PLACED"
+	OrderStatusCreatedTopic  = "ORDER_CREATED"
+	OrderStatusPaidTopic     = "ORDER_PAID"
+	OrderStatusCanceledTopic = "ORDER_CANCELED"
 )
 
 type OrderService interface {
@@ -13,12 +23,14 @@ type OrderService interface {
 type orderService struct {
 	orderRepository     order.Repository
 	inventoryRepository inventory.Repository
+	kafkaWriter         *kafka.Writer
 }
 
-func NewOrderService(orderRepository order.Repository, inventoryRepository inventory.Repository) OrderService {
+func NewOrderService(orderRepository order.Repository, inventoryRepository inventory.Repository, kafkaWriter *kafka.Writer) OrderService {
 	return &orderService{
 		orderRepository:     orderRepository,
 		inventoryRepository: inventoryRepository,
+		kafkaWriter:         kafkaWriter,
 	}
 }
 
@@ -40,6 +52,15 @@ func (service orderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID,
 	err = service.orderRepository.SaveOrder(placedOrder)
 	if err != nil {
 		return nil, err
+	}
+	message := kafka.Message{
+		Key:   []byte(placedOrder.Id.String()),
+		Value: []byte(placedOrder.Status),
+		Topic: OrderStatusPlacedTopic,
+	}
+	err = service.kafkaWriter.WriteMessages(context.Background(), message)
+	if err != nil {
+		fmt.Println(err)
 	}
 	return &placedOrder.Id, nil
 }
