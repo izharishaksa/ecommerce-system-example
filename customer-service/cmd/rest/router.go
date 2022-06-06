@@ -19,12 +19,12 @@ func Run(cfg lib.Config) error {
 	ctx := context.Background()
 	customerRepository := customer.NewInMemoryRepository()
 	customerService := use_case.NewCustomerService(customerRepository)
-	handler := NewHandler(customerService)
+	requestHandler := NewHandler(customerService)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/customers", handler.RegisterCustomer).Methods("POST")
-	router.HandleFunc("/api/v1/customers", handler.GetCustomer).Methods("GET")
-	router.HandleFunc("/api/v1/topups", handler.TopUpBalance).Methods("POST")
+	router.HandleFunc("/api/v1/customers", requestHandler.RegisterCustomer).Methods("POST")
+	router.HandleFunc("/api/v1/customers", requestHandler.GetCustomer).Methods("GET")
+	router.HandleFunc("/api/v1/top_up", requestHandler.TopUpBalance).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},
