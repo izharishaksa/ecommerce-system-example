@@ -2,22 +2,27 @@ package use_case
 
 import (
 	"github.com/google/uuid"
+	"order-service/internal/inventory"
 	"order-service/internal/order"
 )
 
-type OrderService struct {
-	orderRepository     OrderRepository
-	inventoryRepository InventoryRepository
+type OrderService interface {
+	CreateOrder(request CreateOrderRequest) (*uuid.UUID, error)
 }
 
-func NewOrderService(orderRepository OrderRepository, inventoryRepository InventoryRepository) *OrderService {
-	return &OrderService{
+type orderService struct {
+	orderRepository     order.Repository
+	inventoryRepository inventory.Repository
+}
+
+func NewOrderService(orderRepository order.Repository, inventoryRepository inventory.Repository) OrderService {
+	return &orderService{
 		orderRepository:     orderRepository,
 		inventoryRepository: inventoryRepository,
 	}
 }
 
-func (service OrderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID, error) {
+func (service orderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID, error) {
 	productItemIds := make([]uuid.UUID, len(request.Items))
 	items := make([]order.Item, len(request.Items))
 	for i, item := range request.Items {
