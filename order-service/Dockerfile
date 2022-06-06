@@ -9,14 +9,14 @@ RUN go mod download
 
 WORKDIR /app/order-service
 RUN go mod download
-RUN CGO_ENABLED=0 go build -o /usr/bin/order-service ./cmd/rest
+RUN CGO_ENABLED=0 go build -o /usr/bin/order-service ./cmd
 
 FROM alpine
 
 COPY --from=builder /usr/bin/order-service /usr/bin/order-service
 EXPOSE 4003
 
-ENV APP_NAME="order-service"
+ENV APP_NAME="order-rest-service"
 ENV APP_HTTP_PORT="4003"
 
 ENV DB_DSN="postgres://postgres:postgres@order-database-host:5432/order?sslmode=disable"

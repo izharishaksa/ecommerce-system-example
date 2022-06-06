@@ -1,26 +1,25 @@
-package main
+package rest
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"lib"
 	"net/http"
 	"order-service/internal/use_case"
 )
 
-type OrderService interface {
-	CreateOrder(request use_case.CreateOrderRequest) (*uuid.UUID, error)
+type Handler interface {
+	CreateOrder(http.ResponseWriter, *http.Request)
 }
 
-type Handler struct {
-	orderService OrderService
+type handler struct {
+	orderService use_case.OrderService
 }
 
-func NewHandler(orderService OrderService) *Handler {
-	return &Handler{orderService: orderService}
+func NewHandler(orderService use_case.OrderService) Handler {
+	return &handler{orderService: orderService}
 }
 
-func (h Handler) createOrder(w http.ResponseWriter, r *http.Request) {
+func (h handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	var request use_case.CreateOrderRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
