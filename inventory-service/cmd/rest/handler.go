@@ -1,28 +1,27 @@
-package main
+package rest
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"inventory-service/internal/use_case"
 	"lib"
 	"net/http"
 )
 
-type InventoryService interface {
-	CreateProduct(request use_case.CreateProductRequest) (*uuid.UUID, error)
-	GetAllProducts() ([]use_case.ProductDetail, error)
-	AddStock(request use_case.AddStockRequest) error
+type Handler interface {
+	CreateProduct(http.ResponseWriter, *http.Request)
+	GetProduct(http.ResponseWriter, *http.Request)
+	AddProductStock(http.ResponseWriter, *http.Request)
 }
 
-type Handler struct {
-	inventoryService InventoryService
+type handler struct {
+	inventoryService use_case.InventoryService
 }
 
-func NewHandler(inventoryService InventoryService) *Handler {
-	return &Handler{inventoryService: inventoryService}
+func NewHandler(inventoryService use_case.InventoryService) Handler {
+	return &handler{inventoryService: inventoryService}
 }
 
-func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
+func (h handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var request use_case.CreateProductRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -34,12 +33,12 @@ func (h Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 	lib.WriteResponse(w, err, productId)
 }
 
-func (h Handler) getProduct(w http.ResponseWriter, _ *http.Request) {
+func (h handler) GetProduct(w http.ResponseWriter, _ *http.Request) {
 	products, err := h.inventoryService.GetAllProducts()
 	lib.WriteResponse(w, err, products)
 }
 
-func (h Handler) addProductStock(w http.ResponseWriter, r *http.Request) {
+func (h handler) AddProductStock(w http.ResponseWriter, r *http.Request) {
 	var request use_case.AddStockRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {

@@ -5,22 +5,22 @@ import (
 	"lib"
 )
 
-type InMemoryRepository struct {
+type inMemoryRepository struct {
 	products map[uuid.UUID]*Product
 }
 
-func NewInMemoryRepository() *InMemoryRepository {
-	return &InMemoryRepository{
+func NewInMemoryRepository() Repository {
+	return &inMemoryRepository{
 		products: make(map[uuid.UUID]*Product),
 	}
 }
 
-func (repo *InMemoryRepository) SaveProduct(product *Product) error {
+func (repo *inMemoryRepository) SaveProduct(product *Product) error {
 	repo.products[product.Id] = product
 	return nil
 }
 
-func (repo *InMemoryRepository) FindProductById(id uuid.UUID) (*Product, error) {
+func (repo *inMemoryRepository) FindProductById(id uuid.UUID) (*Product, error) {
 	product, ok := repo.products[id]
 	if !ok {
 		return nil, lib.NewErrNotFound("product not found")
@@ -28,7 +28,7 @@ func (repo *InMemoryRepository) FindProductById(id uuid.UUID) (*Product, error) 
 	return product, nil
 }
 
-func (repo *InMemoryRepository) GetAllProducts() ([]*Product, error) {
+func (repo *inMemoryRepository) GetAllProducts() ([]*Product, error) {
 	var products []*Product
 	for _, product := range repo.products {
 		products = append(products, product)

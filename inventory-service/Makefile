@@ -3,7 +3,7 @@
 SHELL := /bin/bash # Use bash syntax
 SOURCE_DIRS=$(shell go list ./... | grep -v /vendor | grep -v /out | cut -d "/" -f2 | sort | uniq)
 
-IN_EXE="./cmd/rest"
+IN_EXE="./cmd"
 OUT_EXE="./bin/inventory-service"
 
 build:
