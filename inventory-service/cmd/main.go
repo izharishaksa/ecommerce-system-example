@@ -15,7 +15,7 @@ func main() {
 	wg.Add(2)
 
 	go func() {
-		err := rest.StartServer(cfg)
+		err := rest.Run(cfg)
 		if err != nil {
 			log.Println(err)
 		}
@@ -24,7 +24,7 @@ func main() {
 
 	go func() {
 		cfg1.App.HTTPPort = 6001
-		err := rest.StartServer(cfg1)
+		err := rest.Run(cfg1)
 		if err != nil {
 			log.Println(err)
 		}
