@@ -19,8 +19,7 @@ import (
 	"syscall"
 )
 
-func Run(cfg lib.Config) error {
-	ctx := context.Background()
+func Run(ctx context.Context, cfg lib.Config) error {
 	var err error
 
 	err = setKafkaTopic(cfg)
@@ -78,6 +77,7 @@ func setKafkaTopic(cfg lib.Config) error {
 		{Topic: use_case.OrderStatusCreatedTopic, NumPartitions: 1, ReplicationFactor: 1},
 		{Topic: use_case.OrderStatusCanceledTopic, NumPartitions: 1, ReplicationFactor: 1},
 		{Topic: use_case.OrderStatusPaidTopic, NumPartitions: 1, ReplicationFactor: 1},
+		{Topic: use_case.OrderStatusRejectedTopic, NumPartitions: 1, ReplicationFactor: 1},
 	}
 
 	err = controllerConn.CreateTopics(topicConfigs...)

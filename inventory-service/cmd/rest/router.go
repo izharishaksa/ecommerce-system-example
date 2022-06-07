@@ -17,6 +17,8 @@ import (
 
 func Run(cfg lib.Config) error {
 	ctx := context.TODO()
+	var err error
+
 	inventoryRepository := inventory.NewInMemoryRepository()
 	inventoryService := use_case.NewInventoryService(inventoryRepository)
 	requestHandler := NewHandler(inventoryService)
@@ -37,7 +39,7 @@ func Run(cfg lib.Config) error {
 	})
 	httpHandler := c.Handler(router)
 
-	err := startServer(ctx, httpHandler, cfg)
+	err = startServer(ctx, httpHandler, cfg)
 	if err != nil {
 		return err
 	}
@@ -72,10 +74,6 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 		}
 	}()
 
-	return gracefulShutdown(ctx, server, cfg)
-}
-
-func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) error {
 	interruption := make(chan os.Signal, 1)
 	defer log.Printf("%s is shutting down...", cfg.App.Name)
 

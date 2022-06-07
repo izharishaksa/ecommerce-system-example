@@ -6,7 +6,9 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/rs/cors v1.8.2
+	github.com/segmentio/kafka-go v0.4.32
 	github.com/stretchr/testify v1.7.1
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	lib v1.0.1
 )
 
@@ -22,7 +24,6 @@ require (
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/segmentio/kafka-go v0.4.32 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
