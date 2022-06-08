@@ -15,7 +15,7 @@ func NewStock() *Stock {
 	}
 }
 
-func (s Stock) UpdateByOrder(orderItems []OrderItem) (*float64, error) {
+func (s *Stock) UpdateByOrder(orderItems []OrderItem) (*float64, error) {
 	totalPrice := 0.0
 	for _, item := range orderItems {
 		product, ok := s.products[item.ProductId]
