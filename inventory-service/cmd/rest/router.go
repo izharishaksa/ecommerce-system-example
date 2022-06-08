@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"inventory-service/internal/inventory"
-	"inventory-service/internal/use_case"
 	"lib"
 	"log"
 	"net/http"
@@ -15,13 +13,9 @@ import (
 	"syscall"
 )
 
-func Run(cfg lib.Config) error {
+func Run(cfg lib.Config, requestHandler Handler) error {
 	ctx := context.TODO()
 	var err error
-
-	inventoryRepository := inventory.NewInMemoryRepository()
-	inventoryService := use_case.NewInventoryService(inventoryRepository)
-	requestHandler := NewHandler(inventoryService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/products", requestHandler.GetProduct).Methods("GET")
