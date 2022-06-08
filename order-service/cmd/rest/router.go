@@ -10,8 +10,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"order-service/internal/inventory"
-	"order-service/internal/order"
 	"order-service/internal/use_case"
 	"os"
 	"os/signal"
@@ -19,23 +17,14 @@ import (
 	"syscall"
 )
 
-func Run(ctx context.Context, cfg lib.Config) error {
+func Run(cfg lib.Config, requestHandler Handler) error {
+	ctx := context.TODO()
 	var err error
-
 	err = setKafkaTopic(cfg)
-
-	kafkaWriter := &kafka.Writer{
-		Addr:                   kafka.TCP(cfg.Kafka),
-		AllowAutoTopicCreation: true,
-	}
-
-	orderRepository := order.NewInMemoryRepository()
-	inventoryRepository := inventory.NewApiRepository()
-	orderService := use_case.NewOrderService(orderRepository, inventoryRepository, kafkaWriter)
-	requestHandler := NewHandler(orderService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/orders", requestHandler.CreateOrder).Methods("POST")
+	router.HandleFunc("/api/v1/orders", requestHandler.GetOrders).Methods("GET")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:     []string{"*"},

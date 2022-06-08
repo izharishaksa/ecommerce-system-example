@@ -9,6 +9,7 @@ import (
 
 type Handler interface {
 	CreateOrder(http.ResponseWriter, *http.Request)
+	GetOrders(writer http.ResponseWriter, request *http.Request)
 }
 
 type handler struct {
@@ -29,4 +30,9 @@ func (h handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	productId, err := h.orderService.CreateOrder(request)
 
 	lib.WriteResponse(w, err, productId)
+}
+
+func (h handler) GetOrders(writer http.ResponseWriter, _ *http.Request) {
+	orders, err := h.orderService.GetAllOrders()
+	lib.WriteResponse(writer, err, orders)
 }
