@@ -35,3 +35,26 @@ func (repo *inMemoryRepository) GetAllProducts() ([]Product, error) {
 	}
 	return products, nil
 }
+
+func (repo *inMemoryRepository) GetAvailableStock(ids []uuid.UUID) (*Stock, error) {
+	stock := NewStock()
+	for _, id := range ids {
+		product, ok := repo.products[id]
+		if !ok {
+			return nil, lib.NewErrNotFound("product not found")
+		}
+
+		stock.products[id] = product
+	}
+	return stock, nil
+}
+
+func (repo *inMemoryRepository) UpdateStock(stock *Stock) error {
+	for id, product := range stock.products {
+		oldProduct := repo.products[id]
+		oldProduct.Stock = product.Stock
+		oldProduct.Sold = product.Sold
+		repo.products[id] = oldProduct
+	}
+	return nil
+}

@@ -14,6 +14,7 @@ const (
 	OrderStatusCreatedTopic  = "ORDER_CREATED"
 	OrderStatusPaidTopic     = "ORDER_PAID"
 	OrderStatusCanceledTopic = "ORDER_CANCELED"
+	OrderStatusRejectedTopic = "ORDER_REJECTED"
 )
 
 type OrderService interface {
@@ -61,6 +62,8 @@ func (service orderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID,
 	err = service.kafkaWriter.WriteMessages(context.Background(), message)
 	if err != nil {
 		fmt.Println(err)
+	} else {
+		fmt.Printf("Message sent to topic %s: %s=%s\n", message.Topic, message.Key, message.Value)
 	}
 	return &placedOrder.Id, nil
 }

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"inventory-service/internal/inventory"
-	"inventory-service/internal/use_case"
 	"lib"
 	"log"
 	"net/http"
@@ -15,11 +13,9 @@ import (
 	"syscall"
 )
 
-func Run(cfg lib.Config) error {
+func Run(cfg lib.Config, requestHandler Handler) error {
 	ctx := context.TODO()
-	inventoryRepository := inventory.NewInMemoryRepository()
-	inventoryService := use_case.NewInventoryService(inventoryRepository)
-	requestHandler := NewHandler(inventoryService)
+	var err error
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/products", requestHandler.GetProduct).Methods("GET")
@@ -37,7 +33,7 @@ func Run(cfg lib.Config) error {
 	})
 	httpHandler := c.Handler(router)
 
-	err := startServer(ctx, httpHandler, cfg)
+	err = startServer(ctx, httpHandler, cfg)
 	if err != nil {
 		return err
 	}
@@ -72,10 +68,6 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 		}
 	}()
 
-	return gracefulShutdown(ctx, server, cfg)
-}
-
-func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) error {
 	interruption := make(chan os.Signal, 1)
 	defer log.Printf("%s is shutting down...", cfg.App.Name)
 
