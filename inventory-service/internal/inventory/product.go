@@ -64,3 +64,12 @@ func (p *Product) UpdateSalePrice(newSalePrice float64) error {
 	p.SalePrice = newSalePrice
 	return nil
 }
+
+func (p *Product) DecreaseStock(quantity int) error {
+	p.Stock -= quantity
+	if p.Stock < 0 {
+		return lib.NewErrBadRequest("not enough stock")
+	}
+	p.Sold += quantity
+	return nil
+}
