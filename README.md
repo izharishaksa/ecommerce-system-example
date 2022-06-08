@@ -1,8 +1,6 @@
-# WPG Ecommerce System
+# Simple Ecommerce System
 Project page: https://github.com/users/izharishaksa/projects/6/views/1
-
-## Problem description
-Simple e-commerce system.
+Monorepo that contains multiple microservices. All services communicated using message brokers. Used tech stacks: Go and Kafka.
 
 ## Run instructions
 1. Run `docker-compose up`
