@@ -38,29 +38,14 @@ services:
       dockerfile: ./inventory-service/Dockerfile
     ports:
       - "4001:4001"
-      - "6001:6001"
     networks:
       - wpg-network
-      - inventory-network
       - kafka-network
     depends_on:
-      - inventory-database
       - kafka
     restart: on-failure
     environment:
       KAFKA_BROKERS: "kafka-host:9092"
-  inventory-database:
-    hostname: inventory-database-host
-    image: postgres:8.4
-    ports:
-      - "5432:5432"
-    networks:
-      - inventory-network
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=inventory
-    restart: on-failure
   customer-service:
     hostname: customer-host
     build:
@@ -100,8 +85,6 @@ services:
     restart: on-failure
 networks:
   wpg-network:
-    driver: bridge
-  inventory-network:
     driver: bridge
   kafka-network:
     driver: bridge
