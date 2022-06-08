@@ -22,3 +22,15 @@ func fromProductToProductDetail(product inventory.Product) ProductDetail {
 		Sold:      product.Sold,
 	}
 }
+
+type OrderAcceptedResponse struct {
+	Id         uuid.UUID `json:"id"`
+	CustomerId uuid.UUID `json:"customer_id"`
+	TotalPrice float64   `json:"total_price"`
+}
+
+type OrderRejectedResponse struct {
+	Id         uuid.UUID `json:"id"`
+	CustomerId uuid.UUID `json:"customer_id"`
+	Message    string    `json:"message"`
+}
