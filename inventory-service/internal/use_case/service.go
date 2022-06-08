@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
-	"golang.org/x/text/message"
 	"inventory-service/internal/inventory"
 )
 
@@ -116,7 +115,6 @@ func (service *inventoryService) OrderPlaced(request PlacedOrderRequest) error {
 }
 
 func sendKafkaMessage(ctx context.Context, writer *kafka.Writer, topic string, key string, value []byte) error {
-	fmt.Printf("Message sent to topic %s: %s=%s\n", topic, message.Key, value)
 	err := writer.WriteMessages(ctx, kafka.Message{
 		Key:   []byte(key),
 		Value: value,
