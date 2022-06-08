@@ -2,60 +2,73 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/segmentio/kafka-go"
 	"lib"
 	"log"
+	"order-service/cmd/kafkaclient"
 	"order-service/cmd/rest"
+	"order-service/internal/order"
+	"order-service/internal/use_case"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
-	"time"
 )
 
-func check(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			fmt.Println("Done")
-			return
-		case <-time.After(time.Second * 10):
-			fmt.Println("Hello")
-		}
-	}
+func exampleHandler(message kafka.Message) error {
+	log.Printf("message: %s %s", message.Topic, message.Value)
+
+	return nil
 }
 
 func main() {
 	cfg := lib.LoadConfigByFile("./cmd", "config", "yaml")
-	ctx, cancel := context.WithCancel(context.Background())
+	var ctx, cancel = context.WithCancel(context.Background())
+
+	//setup service
+	kafkaWriter := &kafka.Writer{
+		Addr:                   kafka.TCP(cfg.Kafka),
+		AllowAutoTopicCreation: true,
+	}
+	orderRepository := order.NewInMemoryRepository()
+	orderService := use_case.NewOrderService(orderRepository, kafkaWriter)
+
+	//setup rest handler
+	restChan := make(chan error, 1)
 	go func() {
-		interruption := make(chan os.Signal, 1)
+		restHandler := rest.NewHandler(orderService)
+		restChan <- rest.Run(cfg, restHandler)
+	}()
+
+	//setup kafka consumer handler
+	consumerErrChan := make(chan error, 4)
+	kafkaConsumerHandler := kafkaclient.NewHandler(orderService)
+	go func() {
+		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_CREATED", "ORDER_CREATED_GROUP", kafkaConsumerHandler.OrderCreated)
+	}()
+	go func() {
+		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_REJECTED", "ORDER_REJECTED_GROUP", kafkaConsumerHandler.OrderRejected)
+	}()
+	go func() {
+		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_PAID", "ORDER_PAID_GROUP", exampleHandler)
+	}()
+	go func() {
+		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_CANCELED", "ORDER_CANCELED_GROUP", exampleHandler)
+	}()
+
+	interruption := make(chan os.Signal)
+	go func() {
 		signal.Notify(interruption, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
-		<-interruption
-		cancel()
 	}()
 
-	//conn, err := kafkalib.Dial("tcp", cfg.Kafka)
-	//if err != nil {
-	//	panic(err.Error())
-	//} else {
-	//	fmt.Println("Connected to Kafka")
-	//}
-	//_, err = conn.Brokers()
-	//if err != nil {
-	//	panic(err.Error())
-	//} else {
-	//	fmt.Println("Connected to Kafka 1")
-	//}
+	<-interruption
+	cancel()
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go func() {
-		err := rest.Run(ctx, cfg)
-		if err != nil {
-			log.Println(err)
-		}
-		wg.Done()
-	}()
-	wg.Wait()
+	select {
+	case <-interruption:
+		log.Println("Interrupted")
+	case err := <-consumerErrChan:
+		log.Println("consumer ran with an error", err)
+	case err := <-restChan:
+		log.Println("rest ran with an error", err)
+	}
 }
