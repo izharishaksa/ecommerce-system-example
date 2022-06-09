@@ -62,27 +62,25 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) 
 }
 
 func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
-	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
 		Handler: httpHandler,
 	}
 
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("%s failed to start: %v", cfg.App.Name, err)
-		}
-	}()
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("%s failed to start: %v", cfg.App.Name, err)
+	}
+	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 
 	interruption := make(chan os.Signal, 1)
-	defer log.Printf("%s is shutting down...", cfg.App.Name)
-
 	signal.Notify(interruption, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-interruption
 
 	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("%s failed to shutdown: %v", cfg.App.Name, err)
 		return err
 	}
+	log.Printf("%s is shutting down...", cfg.App.Name)
 
 	return nil
 }
