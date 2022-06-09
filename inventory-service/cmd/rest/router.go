@@ -13,7 +13,13 @@ import (
 	"syscall"
 )
 
-func Run(cfg lib.Config, requestHandler Handler) error {
+type handler interface {
+	CreateProduct(http.ResponseWriter, *http.Request)
+	GetProduct(http.ResponseWriter, *http.Request)
+	AddProductStock(http.ResponseWriter, *http.Request)
+}
+
+func RunServer(cfg lib.Config, requestHandler handler) error {
 	ctx := context.TODO()
 	var err error
 

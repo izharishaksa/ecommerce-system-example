@@ -15,7 +15,12 @@ func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup st
 		GroupID: consumerGroup,
 		Topic:   topic,
 	})
-	defer kafkaReader.Close()
+	defer func(kafkaReader *kafka.Reader) {
+		err := kafkaReader.Close()
+		if err != nil {
+			errChan <- err
+		}
+	}(kafkaReader)
 
 	for {
 		msg, err := kafkaReader.ReadMessage(ctx)

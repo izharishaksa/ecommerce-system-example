@@ -36,7 +36,7 @@ func main() {
 	restChan := make(chan error, 1)
 	go func() {
 		restHandler := rest.NewHandler(inventoryService)
-		restChan <- rest.Run(cfg, restHandler)
+		restChan <- rest.RunServer(cfg, restHandler)
 	}()
 
 	//setup kafka consumer handler

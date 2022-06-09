@@ -8,19 +8,19 @@ import (
 	"log"
 )
 
-type Handler interface {
-	PlacedOrder(message kafka.Message) error
+type eventConsumerService interface {
+	OrderPlaced(request use_case.PlacedOrderRequest) error
 }
 
-type handler struct {
-	inventoryService use_case.InventoryService
+type handlerImpl struct {
+	service eventConsumerService
 }
 
-func NewHandler(inventoryService use_case.InventoryService) Handler {
-	return &handler{inventoryService: inventoryService}
+func NewHandler(service eventConsumerService) *handlerImpl {
+	return &handlerImpl{service: service}
 }
 
-func (h handler) PlacedOrder(message kafka.Message) error {
+func (h handlerImpl) PlacedOrder(message kafka.Message) error {
 	log.Printf("Received message: %s", message.Value)
 	var request use_case.PlacedOrderRequest
 	err := json.Unmarshal(message.Value, &request)
@@ -28,7 +28,8 @@ func (h handler) PlacedOrder(message kafka.Message) error {
 		fmt.Println(err)
 		return err
 	}
-	err = h.inventoryService.OrderPlaced(request)
+	err = h.service.OrderPlaced(request)
 	log.Println(err)
+
 	return err
 }
