@@ -14,12 +14,6 @@ import (
 	"syscall"
 )
 
-func exampleHandler(message kafka.Message) error {
-	log.Printf("message: %s %s", message.Topic, message.Value)
-
-	return nil
-}
-
 func main() {
 	cfg := lib.LoadConfigByFile("./cmd", "config", "yaml")
 	var ctx, cancel = context.WithCancel(context.Background())
@@ -32,25 +26,18 @@ func main() {
 	inventoryRepository := inventory.NewInMemoryRepository()
 	inventoryService := use_case.NewInventoryService(inventoryRepository, kafkaWriter)
 
-	//setup rest handler
+	//setup rest server
 	restChan := make(chan error, 1)
 	go func() {
 		restHandler := rest.NewHandler(inventoryService)
 		restChan <- rest.RunServer(cfg, restHandler)
 	}()
 
-	//setup kafka consumer handler
-	topics := []string{"ORDER_PLACED", "ORDER_CREATED", "ORDER_CANCELED"}
-	consumerErrChan := make(chan error, len(topics))
+	//setup kafka consumer
+	consumerErrChan := make(chan error, 1)
 	kafkaConsumerHandler := kafkaclient.NewHandler(inventoryService)
 	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_PLACED", "ORDER_PLACED_GROUP", kafkaConsumerHandler.PlacedOrder)
-	}()
-	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_CREATED", "ORDER_CREATED_GROUP", exampleHandler)
-	}()
-	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_CANCELED", "ORDER_CANCELED_GROUP", exampleHandler)
+		consumerErrChan <- kafkaclient.RunConsumer(ctx, cfg, kafkaConsumerHandler)
 	}()
 
 	interruption := make(chan os.Signal)
@@ -63,9 +50,9 @@ func main() {
 
 	select {
 	case <-interruption:
-		log.Println("Interrupted")
+		log.Println("interrupted")
 	case err := <-consumerErrChan:
-		log.Println("consumer ran with an error", err)
+		log.Printf("consumer error: %s", err.Error())
 	case err := <-restChan:
 		log.Println("rest ran with an error", err)
 	}
