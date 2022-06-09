@@ -1,7 +1,7 @@
 # Simple Ecommerce System
 Project page: https://github.com/users/izharishaksa/projects/6/views/1
 
-Monorepo that contains multiple microservices. All services communicated using message brokers. Used tech stacks: Go and Kafka.
+Monorepo that contains multiple microservices. Implemented Clean Architecture and Domain Driven Design approach. Services communicate using message brokers. Tech stacks: Go and Kafka.
 
 ## Run instructions
 1. Run `docker-compose up`
