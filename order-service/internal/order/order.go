@@ -6,11 +6,9 @@ import (
 )
 
 const (
-	OrderStatusPlaced   = "placed"
-	OrderStatusCreated  = "created"
-	OrderStatusRejected = "rejected"
-	OrderStatusPaid     = "paid"
-	OrderStatusCanceled = "canceled"
+	Placed   = "placed"
+	Created  = "created"
+	Rejected = "rejected"
 )
 
 type Order struct {
@@ -29,13 +27,13 @@ type Item struct {
 }
 
 func (o *Order) Reject(message *string) error {
-	o.Status = OrderStatusRejected
+	o.Status = Rejected
 	o.Message = message
 	return nil
 }
 
 func (o *Order) CreatedAtPrice(price float64) error {
-	o.Status = OrderStatusCreated
+	o.Status = Created
 	o.TotalPrice = price
 	return nil
 }
@@ -45,7 +43,7 @@ func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, error) {
 		Id:         uuid.New(),
 		CustomerId: customerId,
 		Items:      items,
-		Status:     OrderStatusPlaced,
+		Status:     Placed,
 		TotalPrice: 0,
 		CreatedAt:  time.Now(),
 	}
