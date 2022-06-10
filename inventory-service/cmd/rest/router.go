@@ -67,9 +67,11 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 		Handler: httpHandler,
 	}
 
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("%s failed to start: %v", cfg.App.Name, err)
-	}
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("%s failed to start: %v", cfg.App.Name, err)
+		}
+	}()
 	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 
 	interruption := make(chan os.Signal, 1)
