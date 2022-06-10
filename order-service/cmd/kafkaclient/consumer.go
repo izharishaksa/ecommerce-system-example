@@ -17,6 +17,7 @@ func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup st
 	})
 	defer kafkaReader.Close()
 
+	log.Printf("Consuming topic: %s", topic)
 	for {
 		msg, err := kafkaReader.ReadMessage(ctx)
 		if err != nil {

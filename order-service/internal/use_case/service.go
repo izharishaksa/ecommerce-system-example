@@ -17,26 +17,25 @@ const (
 	OrderStatusRejectedTopic = "ORDER_REJECTED"
 )
 
-type OrderService interface {
-	CreateOrder(request CreateOrderRequest) (*uuid.UUID, error)
-	GetAllOrders() ([]OrderResponse, error)
-	OrderRejected(request OrderRejectedRequest) error
-	OrderCreated(request OrderCreatedRequest) error
+type repository interface {
+	SaveOrder(order *order.Order) error
+	GetAllOrders() ([]order.Order, error)
+	FindOrderById(id uuid.UUID) (*order.Order, error)
 }
 
-type orderService struct {
-	orderRepository order.Repository
+type orderServiceImpl struct {
+	orderRepository repository
 	kafkaWriter     *kafka.Writer
 }
 
-func NewOrderService(orderRepository order.Repository, kafkaWriter *kafka.Writer) OrderService {
-	return &orderService{
+func NewOrderService(orderRepository repository, kafkaWriter *kafka.Writer) *orderServiceImpl {
+	return &orderServiceImpl{
 		orderRepository: orderRepository,
 		kafkaWriter:     kafkaWriter,
 	}
 }
 
-func (service orderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID, error) {
+func (service orderServiceImpl) CreateOrder(request CreateOrderRequest) (*uuid.UUID, error) {
 	productItemIds := make([]uuid.UUID, len(request.Items))
 	items := make([]order.Item, len(request.Items))
 	for i, item := range request.Items {
@@ -66,7 +65,7 @@ func (service orderService) CreateOrder(request CreateOrderRequest) (*uuid.UUID,
 	return &placedOrder.Id, nil
 }
 
-func (service orderService) OrderRejected(request OrderRejectedRequest) error {
+func (service orderServiceImpl) OrderRejected(request OrderRejectedRequest) error {
 	orderById, err := service.orderRepository.FindOrderById(request.Id)
 	if err != nil {
 		return err
@@ -82,7 +81,7 @@ func (service orderService) OrderRejected(request OrderRejectedRequest) error {
 	return nil
 }
 
-func (service orderService) OrderCreated(request OrderCreatedRequest) error {
+func (service orderServiceImpl) OrderCreated(request OrderCreatedRequest) error {
 	orderById, err := service.orderRepository.FindOrderById(request.Id)
 	if err != nil {
 		return err
@@ -98,7 +97,7 @@ func (service orderService) OrderCreated(request OrderCreatedRequest) error {
 	return nil
 }
 
-func (service orderService) GetAllOrders() ([]OrderResponse, error) {
+func (service orderServiceImpl) GetAllOrders() ([]OrderResponse, error) {
 	orders, err := service.orderRepository.GetAllOrders()
 	if err != nil {
 		return nil, err

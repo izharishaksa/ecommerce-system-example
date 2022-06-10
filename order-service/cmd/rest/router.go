@@ -17,8 +17,12 @@ import (
 	"syscall"
 )
 
-func Run(cfg lib.Config, requestHandler Handler) error {
-	ctx := context.TODO()
+type Handler interface {
+	CreateOrder(http.ResponseWriter, *http.Request)
+	GetOrders(writer http.ResponseWriter, request *http.Request)
+}
+
+func Run(ctx context.Context, cfg lib.Config, requestHandler Handler) error {
 	var err error
 	err = setKafkaTopic(cfg)
 
@@ -93,7 +97,6 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) 
 }
 
 func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
-	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
 		Handler: httpHandler,
@@ -104,13 +107,9 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 			panic(err)
 		}
 	}()
+	log.Printf("%s is running at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 
-	return gracefulShutdown(ctx, server, cfg)
-}
-
-func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) error {
 	interruption := make(chan os.Signal, 1)
-	defer log.Printf("%s is shutting down...", cfg.App.Name)
 
 	signal.Notify(interruption, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-interruption
@@ -118,6 +117,7 @@ func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) 
 	if err := server.Shutdown(ctx); err != nil {
 		return err
 	}
+	log.Printf("%s is shutting down...", cfg.App.Name)
 
 	return nil
 }

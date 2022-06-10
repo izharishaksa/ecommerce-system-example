@@ -36,23 +36,14 @@ func main() {
 	restChan := make(chan error, 1)
 	go func() {
 		restHandler := rest.NewHandler(orderService)
-		restChan <- rest.Run(cfg, restHandler)
+		restChan <- rest.Run(ctx, cfg, restHandler)
 	}()
 
 	//setup kafka consumer handler
 	consumerErrChan := make(chan error, 4)
 	kafkaConsumerHandler := kafkaclient.NewHandler(orderService)
 	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_CREATED", "ORDER_CREATED_GROUP", kafkaConsumerHandler.OrderCreated)
-	}()
-	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_REJECTED", "ORDER_REJECTED_GROUP", kafkaConsumerHandler.OrderRejected)
-	}()
-	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_PAID", "ORDER_PAID_GROUP", exampleHandler)
-	}()
-	go func() {
-		consumerErrChan <- kafkaclient.Consume(ctx, cfg, "ORDER_CANCELED", "ORDER_CANCELED_GROUP", exampleHandler)
+		consumerErrChan <- kafkaclient.RunConsumer(ctx, cfg, kafkaConsumerHandler)
 	}()
 
 	interruption := make(chan os.Signal)

@@ -9,7 +9,7 @@ type inMemoryRepository struct {
 	orders map[string]*Order
 }
 
-func NewInMemoryRepository() Repository {
+func NewInMemoryRepository() *inMemoryRepository {
 	return &inMemoryRepository{
 		orders: make(map[string]*Order),
 	}
