@@ -8,17 +8,17 @@ import (
 	"net/http"
 )
 
-type inventoryService interface {
+type InventoryService interface {
 	CreateProduct(request use_case.CreateProductRequest) (*uuid.UUID, error)
 	GetAllProducts() ([]use_case.ProductDetail, error)
 	AddStock(request use_case.AddStockRequest) error
 }
 
 type handlerImpl struct {
-	inventoryService inventoryService
+	inventoryService InventoryService
 }
 
-func NewHandler(inventoryService inventoryService) *handlerImpl {
+func NewHandler(inventoryService InventoryService) *handlerImpl {
 	return &handlerImpl{inventoryService: inventoryService}
 }
 

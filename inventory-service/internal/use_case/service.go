@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
 	"inventory-service/internal/inventory"
 )
 
@@ -14,7 +13,7 @@ const (
 	OrderCreated  = "ORDER_CREATED"
 )
 
-type inventoryRepository interface {
+type InventoryRepository interface {
 	SaveProduct(product *inventory.Product) error
 	FindProductById(id uuid.UUID) (*inventory.Product, error)
 	GetAllProducts() ([]inventory.Product, error)
@@ -22,13 +21,17 @@ type inventoryRepository interface {
 	UpdateStock(stock *inventory.Stock) error
 }
 
-type inventoryService struct {
-	inventoryRepository inventoryRepository
-	kafkaWriter         *kafka.Writer
+type EventPublisher interface {
+	Publish(ctx context.Context, event string, id string, value []byte) error
 }
 
-func NewInventoryService(inventoryRepository inventoryRepository, kafkaWriter *kafka.Writer) *inventoryService {
-	return &inventoryService{inventoryRepository: inventoryRepository, kafkaWriter: kafkaWriter}
+type inventoryService struct {
+	inventoryRepository InventoryRepository
+	eventPublisher      EventPublisher
+}
+
+func NewInventoryService(inventoryRepository InventoryRepository, eventPublisher EventPublisher) *inventoryService {
+	return &inventoryService{inventoryRepository: inventoryRepository, eventPublisher: eventPublisher}
 }
 
 func (service *inventoryService) CreateProduct(request CreateProductRequest) (*uuid.UUID, error) {
@@ -88,7 +91,7 @@ func (service *inventoryService) OrderPlaced(request PlacedOrderRequest) error {
 		if err != nil {
 			return err
 		}
-		return sendKafkaMessage(context.Background(), service.kafkaWriter, OrderRejected, request.Id.String(), messageValue)
+		return service.eventPublisher.Publish(context.Background(), OrderRejected, request.Id.String(), messageValue)
 	}
 	totalPrice, err = stock.UpdateByOrder(orderItems)
 	if err != nil {
@@ -97,7 +100,7 @@ func (service *inventoryService) OrderPlaced(request PlacedOrderRequest) error {
 		if err != nil {
 			return err
 		}
-		return sendKafkaMessage(context.Background(), service.kafkaWriter, OrderRejected, request.Id.String(), messageValue)
+		return service.eventPublisher.Publish(context.Background(), OrderRejected, request.Id.String(), messageValue)
 	}
 	response := OrderAcceptedResponse{
 		Id:         request.Id,
@@ -112,17 +115,5 @@ func (service *inventoryService) OrderPlaced(request PlacedOrderRequest) error {
 	if err != nil {
 		return err
 	}
-	return sendKafkaMessage(context.Background(), service.kafkaWriter, OrderCreated, request.Id.String(), messageValue)
-}
-
-func sendKafkaMessage(ctx context.Context, writer *kafka.Writer, topic string, key string, value []byte) error {
-	err := writer.WriteMessages(ctx, kafka.Message{
-		Key:   []byte(key),
-		Value: value,
-		Topic: topic,
-	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return service.eventPublisher.Publish(context.Background(), OrderCreated, request.Id.String(), messageValue)
 }

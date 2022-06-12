@@ -5,6 +5,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"inventory-service/cmd/kafkaclient"
 	"inventory-service/cmd/rest"
+	"inventory-service/internal/event"
 	"inventory-service/internal/inventory"
 	"inventory-service/internal/use_case"
 	"lib"
@@ -24,7 +25,8 @@ func main() {
 		AllowAutoTopicCreation: true,
 	}
 	inventoryRepository := inventory.NewInMemoryRepository()
-	inventoryService := use_case.NewInventoryService(inventoryRepository, kafkaWriter)
+	eventPublisher := event.NewKafkaPublisher(kafkaWriter)
+	inventoryService := use_case.NewInventoryService(inventoryRepository, eventPublisher)
 
 	//setup rest server
 	restChan := make(chan error, 1)
