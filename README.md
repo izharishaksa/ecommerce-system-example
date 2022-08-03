@@ -3,6 +3,10 @@ Project page: https://github.com/users/izharishaksa/projects/6/views/1
 
 Monorepo that contains multiple microservices. Implemented Clean Architecture and Domain Driven Design approach. Services communicate using message brokers. Tech stacks: Go and Kafka.
 
+[![Customer Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml)
+[![Inventory Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml)
+[![Order Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/order-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/order-service.yaml)
+
 ## Run instructions
 1. Run `docker-compose up`
 2. Please wait until all services running
