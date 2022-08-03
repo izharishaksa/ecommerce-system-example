@@ -1,6 +1,23 @@
 version: "3"
 
 services:
+  reverse-proxy:
+    build:
+      context: .
+      dockerfile: reverse-proxy/Dockerfile
+    volumes:
+      - "/run/docker.sock:/var/run/docker.sock:ro"
+    restart: "on-failure"
+    networks:
+      - net
+      - ecommerce-network
+    depends_on:
+      - inventory-service
+      - customer-service
+      - order-service
+    ports:
+      - "1500:80"
+      - "443:443"
   zookeeper:
     hostname: zookeeper-host
     image: confluentinc/cp-zookeeper:latest
@@ -32,50 +49,58 @@ services:
       - kafka-network
     restart: on-failure
   inventory-service:
-    hostname: inventory-host
+    hostname: inventory-service-host
     build:
       context: .
       dockerfile: ./inventory-service/Dockerfile
-    ports:
-      - "4001:4001"
     networks:
-      - wpg-network
+      - ecommerce-network
       - kafka-network
     depends_on:
       - kafka
     restart: on-failure
     environment:
+      APP_NAME: "inventory-service"
+      APP_HTTP_PORT: "80"
+      DB_DSN: "postgres://postgres:postgres@inventory-database-host:5432/inventory?sslmode=disable"
+      DB_MAX_IDLE_CONNECTIONS: "20"
+      DB_MAX_OPEN_CONNECTIONS: "100"
+      DB_MAX_IDLE_DURATION_IN_SECS: "60"
+      DB_MAX_LIFE_TIME_DURATION_IN_SECS: "300"
       KAFKA_BROKERS: "kafka-host:9092"
   customer-service:
-    hostname: customer-host
+    hostname: customer-service-host
     build:
       context: .
       dockerfile: ./customer-service/Dockerfile
-    ports:
-      - "4002:4002"
     networks:
-      - wpg-network
+      - ecommerce-network
       - kafka-network
     depends_on:
       - kafka
     restart: on-failure
     environment:
+      APP_NAME: "customer-service"
+      APP_HTTP_PORT: "80"
+      DB_DSN: "postgres://postgres:postgres@customer-database-host:5432/customer?sslmode=disable"
+      DB_MAX_IDLE_CONNECTIONS: "20"
+      DB_MAX_OPEN_CONNECTIONS: "100"
+      DB_MAX_IDLE_DURATION_IN_SECS: "60"
+      DB_MAX_LIFE_TIME_DURATION_IN_SECS: "300"
       KAFKA_BROKERS: "kafka-host:9092"
   order-service:
-    hostname: order-host
+    hostname: order-service-host
     build:
       context: .
       dockerfile: ./order-service/Dockerfile
-    ports:
-      - "4003:4003"
     networks:
-      - wpg-network
+      - ecommerce-network
       - kafka-network
     depends_on:
       - kafka
     environment:
-      APP_NAME: "order-rest-service"
-      APP_HTTP_PORT: "4003"
+      APP_NAME: "order-service"
+      APP_HTTP_PORT: "80"
       DB_DSN: "postgres://postgres:postgres@order-database-host:5432/order?sslmode=disable"
       DB_MAX_IDLE_CONNECTIONS: "20"
       DB_MAX_OPEN_CONNECTIONS: "100"
@@ -84,7 +109,8 @@ services:
       KAFKA_BROKERS: "kafka-host:9092"
     restart: on-failure
 networks:
-  wpg-network:
-    driver: bridge
+  ecommerce-network:
+    external: false
+  net:
+    external: true
   kafka-network:
-    driver: bridge
