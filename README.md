@@ -10,7 +10,7 @@ Monorepo that contains multiple microservices. Implemented Clean Architecture an
 ## Run instructions
 1. Run `docker-compose up`
 2. Please wait until all services running
-3. Test services using `wpg-ecommerce-system.postman_collection.json`
+3. Test services using `ecommerce-system-example.postman_collection.json`
 
 ## Test Case Scenario
 1. Create product `POST /products`
