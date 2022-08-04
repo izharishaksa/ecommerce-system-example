@@ -51,6 +51,7 @@ func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, *event.OrderPlaced,
 		CreatedAt:  time.Now(),
 	}
 	orderPlacedEvent := &event.OrderPlaced{
+		EventType:  event.OrderPlacedType,
 		Id:         order.Id,
 		CustomerId: order.CustomerId,
 		Items: func(items []Item) []event.OrderItem {
