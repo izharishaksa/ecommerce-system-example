@@ -26,7 +26,7 @@ func fromOrderToOrderDetail(order order.Order) OrderResponse {
 		Id:         order.Id,
 		CustomerId: order.CustomerId,
 		Items:      fromOrderItemsToItemResponses(order.Items),
-		Status:     order.Status,
+		Status:     string(order.Status),
 		TotalPrice: order.TotalPrice,
 		CreatedAt:  order.CreatedAt,
 		Message:    order.Message,
