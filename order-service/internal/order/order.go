@@ -7,16 +7,18 @@ import (
 )
 
 const (
-	Placed   = "placed"
-	Created  = "created"
-	Rejected = "rejected"
+	Placed   Status = "placed"
+	Created  Status = "created"
+	Rejected Status = "rejected"
 )
+
+type Status string
 
 type Order struct {
 	Id         uuid.UUID
 	CustomerId uuid.UUID
 	Items      []Item
-	Status     string
+	Status     Status
 	TotalPrice float64
 	CreatedAt  time.Time
 	Message    *string
@@ -61,7 +63,7 @@ func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, *event.OrderPlaced,
 			}
 			return orderItems
 		}(order.Items),
-		Status:     order.Status,
+		Status:     string(order.Status),
 		TotalPrice: order.TotalPrice,
 		CreatedAt:  order.CreatedAt,
 		Message:    order.Message,
