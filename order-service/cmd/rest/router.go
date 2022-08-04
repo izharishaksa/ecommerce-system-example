@@ -5,29 +5,24 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/segmentio/kafka-go"
 	"lib"
 	"log"
-	"net"
 	"net/http"
-	"order-service/internal/use_case"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 )
 
 type Handler interface {
-	CreateOrder(http.ResponseWriter, *http.Request)
+	PlaceOrder(http.ResponseWriter, *http.Request)
 	GetOrders(writer http.ResponseWriter, request *http.Request)
 }
 
 func Run(ctx context.Context, cfg lib.Config, requestHandler Handler) error {
 	var err error
-	err = setKafkaTopic(cfg)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/orders", requestHandler.CreateOrder).Methods("POST")
+	router.HandleFunc("/api/v1/orders", requestHandler.PlaceOrder).Methods("POST")
 	router.HandleFunc("/api/v1/orders", requestHandler.GetOrders).Methods("GET")
 
 	c := cors.New(cors.Options{
@@ -45,39 +40,6 @@ func Run(ctx context.Context, cfg lib.Config, requestHandler Handler) error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func setKafkaTopic(cfg lib.Config) error {
-	conn, err := kafka.Dial("tcp", cfg.Kafka)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer conn.Close()
-
-	controller, err := conn.Controller()
-	if err != nil {
-		panic(err.Error())
-	}
-	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
-	if err != nil {
-		panic(err.Error())
-	}
-	defer controllerConn.Close()
-
-	topicConfigs := []kafka.TopicConfig{
-		{Topic: use_case.OrderStatusPlacedTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusCreatedTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusCanceledTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusPaidTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusRejectedTopic, NumPartitions: 1, ReplicationFactor: 1},
-	}
-
-	err = controllerConn.CreateTopics(topicConfigs...)
-	if err != nil {
-		panic(err.Error())
-	}
-
 	return nil
 }
 
