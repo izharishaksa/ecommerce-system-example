@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"log"
-	"order-service/internal/event"
 	"order-service/internal/order"
 )
 
@@ -56,7 +55,7 @@ func (service orderServiceImpl) PlaceOrder(request PlaceOrderRequest) (*uuid.UUI
 	return &placedOrder.Id, nil
 }
 
-func (service orderServiceImpl) OrderRejected(request event.OrderRejectedMessage) error {
+func (service orderServiceImpl) OrderRejected(request order.OrderRejectedMessage) error {
 	orderById, err := service.orderRepository.FindOrderById(request.Id)
 	if err != nil {
 		return err
@@ -72,7 +71,7 @@ func (service orderServiceImpl) OrderRejected(request event.OrderRejectedMessage
 	return nil
 }
 
-func (service orderServiceImpl) OrderCreated(request event.OrderPlacedMessage) error {
+func (service orderServiceImpl) OrderCreated(request order.OrderPlacedMessage) error {
 	orderById, err := service.orderRepository.FindOrderById(request.Id)
 	if err != nil {
 		return err
