@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	"order-service/internal/use_case"
+	"order-service/internal/event"
 )
 
 type kafkaConsumerService interface {
-	OrderCreated(request use_case.OrderCreatedRequest) error
-	OrderRejected(request use_case.OrderRejectedRequest) error
+	OrderCreated(request event.OrderPlacedMessage) error
+	OrderRejected(request event.OrderRejectedMessage) error
 }
 
 type handlerImpl struct {
@@ -21,7 +21,7 @@ func NewHandler(service kafkaConsumerService) *handlerImpl {
 }
 
 func (h handlerImpl) OrderRejected(message kafka.Message) error {
-	var request use_case.OrderRejectedRequest
+	var request event.OrderRejectedMessage
 	err := json.Unmarshal(message.Value, &request)
 	if err != nil {
 		fmt.Println(err)
@@ -31,8 +31,8 @@ func (h handlerImpl) OrderRejected(message kafka.Message) error {
 	return err
 }
 
-func (h handlerImpl) OrderCreated(message kafka.Message) error {
-	var request use_case.OrderCreatedRequest
+func (h handlerImpl) Order(message kafka.Message) error {
+	var request event.OrderPlacedMessage
 	err := json.Unmarshal(message.Value, &request)
 	if err != nil {
 		fmt.Println(err)

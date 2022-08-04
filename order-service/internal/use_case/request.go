@@ -5,7 +5,7 @@ import (
 	"order-service/internal/order"
 )
 
-type CreateOrderRequest struct {
+type PlaceOrderRequest struct {
 	CustomerId uuid.UUID          `json:"customer_id"`
 	Items      []OrderItemRequest `json:"items"`
 }
@@ -20,16 +20,4 @@ func (r OrderItemRequest) toOrderItem() order.Item {
 		ProductId: r.ProductId,
 		Quantity:  r.Quantity,
 	}
-}
-
-type OrderRejectedRequest struct {
-	Id         uuid.UUID `json:"id"`
-	CustomerId uuid.UUID `json:"customer_id"`
-	Message    *string   `json:"message"`
-}
-
-type OrderCreatedRequest struct {
-	Id         uuid.UUID `json:"id"`
-	CustomerId uuid.UUID `json:"customer_id"`
-	TotalPrice float64   `json:"total_price"`
 }

@@ -7,6 +7,7 @@ import (
 	"log"
 	"order-service/cmd/kafkaclient"
 	"order-service/cmd/rest"
+	"order-service/internal/event"
 	"order-service/internal/order"
 	"order-service/internal/use_case"
 	"os"
@@ -30,7 +31,8 @@ func main() {
 		AllowAutoTopicCreation: true,
 	}
 	orderRepository := order.NewInMemoryRepository()
-	orderService := use_case.NewOrderService(orderRepository, kafkaWriter)
+	eventPublisher := event.NewKafkaPublisher(kafkaWriter)
+	orderService := use_case.NewOrderService(orderRepository, eventPublisher)
 
 	//setup rest handler
 	restChan := make(chan error, 1)
@@ -45,12 +47,11 @@ func main() {
 	go func() {
 		consumerErrChan <- kafkaclient.RunConsumer(ctx, cfg, kafkaConsumerHandler)
 	}()
-
+	
 	interruption := make(chan os.Signal)
 	go func() {
 		signal.Notify(interruption, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
 	}()
-
 	<-interruption
 	cancel()
 
