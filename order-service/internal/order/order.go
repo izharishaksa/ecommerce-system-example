@@ -2,6 +2,7 @@ package order
 
 import (
 	"github.com/google/uuid"
+	"order-service/internal/event"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (o *Order) CreatedAtPrice(price float64) error {
 	return nil
 }
 
-func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, error) {
+func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, *event.OrderPlaced, error) {
 	order := &Order{
 		Id:         uuid.New(),
 		CustomerId: customerId,
@@ -47,5 +48,23 @@ func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, error) {
 		TotalPrice: 0,
 		CreatedAt:  time.Now(),
 	}
-	return order, nil
+	orderPlacedEvent := &event.OrderPlaced{
+		Id:         order.Id,
+		CustomerId: order.CustomerId,
+		Items: func(items []Item) []event.OrderItem {
+			var orderItems []event.OrderItem
+			for _, item := range items {
+				orderItems = append(orderItems, event.OrderItem{
+					ProductId: item.ProductId,
+					Quantity:  item.Quantity,
+				})
+			}
+			return orderItems
+		}(order.Items),
+		Status:     order.Status,
+		TotalPrice: order.TotalPrice,
+		CreatedAt:  order.CreatedAt,
+		Message:    order.Message,
+	}
+	return order, orderPlacedEvent, nil
 }

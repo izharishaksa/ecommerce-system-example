@@ -3,46 +3,42 @@ package use_case
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
+	"log"
+	"order-service/internal/event"
 	"order-service/internal/order"
 )
 
-const (
-	OrderStatusPlacedTopic   = "ORDER_PLACED"
-	OrderStatusCreatedTopic  = "ORDER_CREATED"
-	OrderStatusPaidTopic     = "ORDER_PAID"
-	OrderStatusCanceledTopic = "ORDER_CANCELED"
-	OrderStatusRejectedTopic = "ORDER_REJECTED"
-)
-
-type repository interface {
+type OrderRepository interface {
 	SaveOrder(order *order.Order) error
 	GetAllOrders() ([]order.Order, error)
 	FindOrderById(id uuid.UUID) (*order.Order, error)
 }
 
-type orderServiceImpl struct {
-	orderRepository repository
-	kafkaWriter     *kafka.Writer
+type EventPublisher interface {
+	Publish(ctx context.Context, topic string, id string, value []byte) error
 }
 
-func NewOrderService(orderRepository repository, kafkaWriter *kafka.Writer) *orderServiceImpl {
+type orderServiceImpl struct {
+	orderRepository OrderRepository
+	eventPublisher  EventPublisher
+}
+
+func NewOrderService(orderRepository OrderRepository, eventPublisher EventPublisher) *orderServiceImpl {
 	return &orderServiceImpl{
 		orderRepository: orderRepository,
-		kafkaWriter:     kafkaWriter,
+		eventPublisher:  eventPublisher,
 	}
 }
 
-func (service orderServiceImpl) CreateOrder(request CreateOrderRequest) (*uuid.UUID, error) {
+func (service orderServiceImpl) PlaceOrder(request PlaceOrderRequest) (*uuid.UUID, error) {
 	productItemIds := make([]uuid.UUID, len(request.Items))
 	items := make([]order.Item, len(request.Items))
 	for i, item := range request.Items {
 		productItemIds[i] = item.ProductId
 		items[i] = item.toOrderItem()
 	}
-	placedOrder, err := order.PlaceOrder(request.CustomerId, items)
+	placedOrder, event, err := order.PlaceOrder(request.CustomerId, items)
 	if err != nil {
 		return nil, err
 	}
@@ -50,22 +46,17 @@ func (service orderServiceImpl) CreateOrder(request CreateOrderRequest) (*uuid.U
 	if err != nil {
 		return nil, err
 	}
-	messageValue, err := json.Marshal(fromOrderToOrderDetail(*placedOrder))
-	message := kafka.Message{
-		Key:   []byte(placedOrder.Id.String()),
-		Value: messageValue,
-		Topic: OrderStatusPlacedTopic,
-	}
-	err = service.kafkaWriter.WriteMessages(context.Background(), message)
+	serializedEvent, err := json.Marshal(event)
+	err = service.eventPublisher.Publish(context.Background(), "Order", placedOrder.Id.String(), serializedEvent)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	} else {
-		fmt.Printf("Message sent to topic %s: %s=%s\n", message.Topic, message.Key, message.Value)
+		log.Printf("Event published into topic order: %s=%s\n", event.Id, serializedEvent)
 	}
 	return &placedOrder.Id, nil
 }
 
-func (service orderServiceImpl) OrderRejected(request OrderRejectedRequest) error {
+func (service orderServiceImpl) OrderRejected(request event.OrderRejectedMessage) error {
 	orderById, err := service.orderRepository.FindOrderById(request.Id)
 	if err != nil {
 		return err
@@ -81,7 +72,7 @@ func (service orderServiceImpl) OrderRejected(request OrderRejectedRequest) erro
 	return nil
 }
 
-func (service orderServiceImpl) OrderCreated(request OrderCreatedRequest) error {
+func (service orderServiceImpl) OrderCreated(request event.OrderPlacedMessage) error {
 	orderById, err := service.orderRepository.FindOrderById(request.Id)
 	if err != nil {
 		return err
