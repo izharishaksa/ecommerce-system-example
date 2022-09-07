@@ -2,8 +2,6 @@ name: Customer Service
 
 on:
   push:
-    paths-ignore:
-      - "**/*.md"
     paths:
       - "customer-service/**"
   workflow_dispatch:
