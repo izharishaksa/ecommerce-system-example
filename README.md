@@ -1,7 +1,7 @@
 # Simple Ecommerce System
 Project page: https://github.com/users/izharishaksa/projects/6/views/1
 
-Monorepo that contains multiple microservices. Implemented Clean Architecture and Domain Driven Design approach. Services communicate using message brokers. Tech stacks: Go and Kafka.
+Implementing Event Driven Architecture and use Domain Driven Design approach.
 
 [![Customer Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml)
 [![Inventory Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml)
