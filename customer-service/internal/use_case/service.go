@@ -5,21 +5,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type CustomerService interface {
-	RegisterCustomer(name, email string) (*uuid.UUID, error)
-	GetAllCustomers() ([]CustomerDetail, error)
-	TopUp(customerId uuid.UUID, amount float64) error
+type customerRepository interface {
+	SaveCustomer(customer *customer.Customer) error
+	GetCustomer() ([]customer.Customer, error)
+	FindCustomerById(id uuid.UUID) (*customer.Customer, error)
+	UpdateBalance(customer *customer.Customer) error
 }
 
-type customerService struct {
-	customerRepository customer.Repository
+type customerServiceImpl struct {
+	customerRepository customerRepository
 }
 
-func NewCustomerService(customerRepository customer.Repository) CustomerService {
-	return &customerService{customerRepository: customerRepository}
+func NewCustomerService(customerRepository customerRepository) *customerServiceImpl {
+	return &customerServiceImpl{customerRepository: customerRepository}
 }
 
-func (service *customerService) RegisterCustomer(name, email string) (*uuid.UUID, error) {
+func (service *customerServiceImpl) RegisterCustomer(name, email string) (*uuid.UUID, error) {
 	customerInstance, err := customer.NewCustomer(name, email)
 	if err != nil {
 		return nil, err
@@ -31,7 +32,7 @@ func (service *customerService) RegisterCustomer(name, email string) (*uuid.UUID
 	return &customerInstance.Id, err
 }
 
-func (service *customerService) GetAllCustomers() ([]CustomerDetail, error) {
+func (service *customerServiceImpl) GetAllCustomers() ([]CustomerDetail, error) {
 	customers, err := service.customerRepository.GetCustomer()
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func (service *customerService) GetAllCustomers() ([]CustomerDetail, error) {
 	return customerDetails, nil
 }
 
-func (service *customerService) TopUp(customerId uuid.UUID, amount float64) error {
+func (service *customerServiceImpl) TopUp(customerId uuid.UUID, amount float64) error {
 	customerInstance, err := service.customerRepository.FindCustomerById(customerId)
 	if err != nil {
 		return err

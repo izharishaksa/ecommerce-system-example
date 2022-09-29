@@ -8,8 +8,6 @@ import (
 )
 
 func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup string, handler func(message kafka.Message) error) error {
-	errChan := make(chan error, 1)
-
 	kafkaReader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{cfg.Kafka},
 		GroupID: consumerGroup,
@@ -17,6 +15,8 @@ func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup st
 	})
 	defer kafkaReader.Close()
 
+	log.Printf("Start consuming topic: %s", topic)
+	errChan := make(chan error, 1)
 	for {
 		msg, err := kafkaReader.ReadMessage(ctx)
 		if err != nil {
@@ -35,5 +35,5 @@ func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup st
 	if err != nil {
 		panic(err)
 	}
-	return nil
+	return err
 }

@@ -15,7 +15,12 @@ func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup st
 		GroupID: consumerGroup,
 		Topic:   topic,
 	})
-	defer kafkaReader.Close()
+	defer func(kafkaReader *kafka.Reader) {
+		err := kafkaReader.Close()
+		if err != nil {
+			errChan <- err
+		}
+	}(kafkaReader)
 
 	for {
 		msg, err := kafkaReader.ReadMessage(ctx)
@@ -24,16 +29,16 @@ func Consume(ctx context.Context, cfg lib.Config, topic string, consumerGroup st
 			break
 		}
 
+		log.Printf("Received message: %s", msg.Value)
 		if err := handler(msg); err != nil {
 			log.Printf("error consuming message, err: %#v\n", err)
-			continue
 		}
 	}
 
 	err := <-errChan
-	log.Printf("consumer stopped with an error %#v\n", err.Error())
+	log.Printf("consumer %s stopped with an error %#v\n", topic, err.Error())
 	if err != nil {
 		panic(err)
 	}
-	return nil
+	return err
 }

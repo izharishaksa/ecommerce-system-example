@@ -2,8 +2,6 @@ package rest
 
 import (
 	"context"
-	"customer-service/internal/customer"
-	"customer-service/internal/use_case"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -15,12 +13,13 @@ import (
 	"syscall"
 )
 
-func Run(cfg lib.Config) error {
-	ctx := context.Background()
-	customerRepository := customer.NewInMemoryRepository()
-	customerService := use_case.NewCustomerService(customerRepository)
-	requestHandler := NewHandler(customerService)
+type Handler interface {
+	RegisterCustomer(http.ResponseWriter, *http.Request)
+	GetCustomer(http.ResponseWriter, *http.Request)
+	TopUpBalance(http.ResponseWriter, *http.Request)
+}
 
+func Run(ctx context.Context, cfg lib.Config, requestHandler Handler) error {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/customers", requestHandler.RegisterCustomer).Methods("POST")
 	router.HandleFunc("/api/v1/customers", requestHandler.GetCustomer).Methods("GET")
@@ -60,7 +59,6 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) 
 }
 
 func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
-	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
 		Handler: httpHandler,
@@ -68,23 +66,20 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			panic(err)
+			log.Fatal("failed to start server: ", err)
 		}
 	}()
+	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 
-	return gracefulShutdown(ctx, server, cfg)
-}
-
-func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) error {
 	interruption := make(chan os.Signal, 1)
-	defer log.Printf("%s is shutting down...", cfg.App.Name)
-
 	signal.Notify(interruption, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-interruption
 
 	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("failed to shutdown server: %s", err.Error())
 		return err
 	}
+	log.Printf("%s is shutting down gracefully...", cfg.App.Name)
 
 	return nil
 }
