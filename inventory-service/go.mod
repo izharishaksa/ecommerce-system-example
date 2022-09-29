@@ -8,7 +8,6 @@ require (
 	github.com/rs/cors v1.8.2
 	github.com/segmentio/kafka-go v0.4.32
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	lib v1.0.1
 )
 

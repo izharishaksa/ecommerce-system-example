@@ -1,13 +1,16 @@
-# WPG Ecommerce System
+# Simple Ecommerce System
 Project page: https://github.com/users/izharishaksa/projects/6/views/1
 
-## Problem description
-Simple e-commerce system.
+Implementing Event Driven Architecture and use Domain Driven Design approach.
+
+[![Customer Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml)
+[![Inventory Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml)
+[![Order Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/order-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/order-service.yaml)
 
 ## Run instructions
 1. Run `docker-compose up`
 2. Please wait until all services running
-3. Test services using `wpg-ecommerce-system.postman_collection.json`
+3. Demonstrate using `ecommerce-system-example.postman_collection.json`
 
 ## Test Case Scenario
 1. Create product `POST /products`

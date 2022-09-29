@@ -10,7 +10,7 @@ type inMemoryRepository struct {
 	customers map[uuid.UUID]*Customer
 }
 
-func NewInMemoryRepository() Repository {
+func NewInMemoryRepository() *inMemoryRepository {
 	return &inMemoryRepository{
 		customers: make(map[uuid.UUID]*Customer),
 	}

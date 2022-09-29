@@ -5,19 +5,13 @@ import (
 	"time"
 )
 
-const (
-	OrderStatusPlaced   = "placed"
-	OrderStatusCreated  = "created"
-	OrderStatusRejected = "rejected"
-	OrderStatusPaid     = "paid"
-	OrderStatusCanceled = "canceled"
-)
+type Status string
 
 type Order struct {
 	Id         uuid.UUID
 	CustomerId uuid.UUID
 	Items      []Item
-	Status     string
+	Status     Status
 	TotalPrice float64
 	CreatedAt  time.Time
 	Message    *string
@@ -29,25 +23,44 @@ type Item struct {
 }
 
 func (o *Order) Reject(message *string) error {
-	o.Status = OrderStatusRejected
+	o.Status = Rejected
 	o.Message = message
 	return nil
 }
 
 func (o *Order) CreatedAtPrice(price float64) error {
-	o.Status = OrderStatusCreated
+	o.Status = Created
 	o.TotalPrice = price
 	return nil
 }
 
-func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, error) {
+func PlaceOrder(customerId uuid.UUID, items []Item) (*Order, *OrderPlaced, error) {
 	order := &Order{
 		Id:         uuid.New(),
 		CustomerId: customerId,
 		Items:      items,
-		Status:     OrderStatusPlaced,
+		Status:     Placed,
 		TotalPrice: 0,
 		CreatedAt:  time.Now(),
 	}
-	return order, nil
+	orderPlacedEvent := &OrderPlaced{
+		EventType:  PlacedEvent,
+		Id:         order.Id,
+		CustomerId: order.CustomerId,
+		Items: func(items []Item) []OrderItem {
+			var orderItems []OrderItem
+			for _, item := range items {
+				orderItems = append(orderItems, OrderItem{
+					ProductId: item.ProductId,
+					Quantity:  item.Quantity,
+				})
+			}
+			return orderItems
+		}(order.Items),
+		Status:     string(order.Status),
+		TotalPrice: order.TotalPrice,
+		CreatedAt:  order.CreatedAt,
+		Message:    order.Message,
+	}
+	return order, orderPlacedEvent, nil
 }

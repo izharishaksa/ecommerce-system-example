@@ -4,40 +4,40 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	"order-service/internal/use_case"
+	"order-service/internal/order"
 )
 
-type Handler interface {
-	OrderRejected(message kafka.Message) error
-	OrderCreated(message kafka.Message) error
+type kafkaConsumerService interface {
+	OrderCreated(request order.OrderPlacedMessage) error
+	OrderRejected(request order.OrderRejectedMessage) error
 }
 
-type handler struct {
-	orderService use_case.OrderService
+type handlerImpl struct {
+	service kafkaConsumerService
 }
 
-func NewHandler(orderService use_case.OrderService) Handler {
-	return &handler{orderService: orderService}
+func NewHandler(service kafkaConsumerService) *handlerImpl {
+	return &handlerImpl{service: service}
 }
 
-func (h handler) OrderRejected(message kafka.Message) error {
-	var request use_case.OrderRejectedRequest
+func (h handlerImpl) OrderRejected(message kafka.Message) error {
+	var request order.OrderRejectedMessage
 	err := json.Unmarshal(message.Value, &request)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	err = h.orderService.OrderRejected(request)
+	err = h.service.OrderRejected(request)
 	return err
 }
 
-func (h handler) OrderCreated(message kafka.Message) error {
-	var request use_case.OrderCreatedRequest
+func (h handlerImpl) Order(message kafka.Message) error {
+	var request order.OrderPlacedMessage
 	err := json.Unmarshal(message.Value, &request)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	err = h.orderService.OrderCreated(request)
+	err = h.service.OrderCreated(request)
 	return err
 }
