@@ -2,37 +2,38 @@ package rest
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"lib"
 	"net/http"
 	"order-service/internal/use_case"
 )
 
-type Handler interface {
-	CreateOrder(http.ResponseWriter, *http.Request)
-	GetOrders(writer http.ResponseWriter, request *http.Request)
+type OrderService interface {
+	PlaceOrder(request use_case.PlaceOrderRequest) (*uuid.UUID, error)
+	GetAllOrders() ([]use_case.OrderResponse, error)
 }
 
-type handler struct {
-	orderService use_case.OrderService
+type handlerImpl struct {
+	orderService OrderService
 }
 
-func NewHandler(orderService use_case.OrderService) Handler {
-	return &handler{orderService: orderService}
+func NewHandler(orderService OrderService) *handlerImpl {
+	return &handlerImpl{orderService: orderService}
 }
 
-func (h handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	var request use_case.CreateOrderRequest
+func (h handlerImpl) PlaceOrder(w http.ResponseWriter, r *http.Request) {
+	var request use_case.PlaceOrderRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		lib.WriteResponse(w, lib.NewErrBadRequest(err.Error()), nil)
 		return
 	}
-	productId, err := h.orderService.CreateOrder(request)
+	productId, err := h.orderService.PlaceOrder(request)
 
 	lib.WriteResponse(w, err, productId)
 }
 
-func (h handler) GetOrders(writer http.ResponseWriter, _ *http.Request) {
+func (h handlerImpl) GetOrders(writer http.ResponseWriter, _ *http.Request) {
 	orders, err := h.orderService.GetAllOrders()
 	lib.WriteResponse(writer, err, orders)
 }

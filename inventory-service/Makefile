@@ -1,5 +1,3 @@
-.Phony: all
-
 SHELL := /bin/bash # Use bash syntax
 SOURCE_DIRS=$(shell go list ./... | grep -v /vendor | grep -v /out | cut -d "/" -f2 | sort | uniq)
 

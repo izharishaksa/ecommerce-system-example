@@ -5,25 +5,24 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/segmentio/kafka-go"
 	"lib"
 	"log"
-	"net"
 	"net/http"
-	"order-service/internal/use_case"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 )
 
-func Run(cfg lib.Config, requestHandler Handler) error {
-	ctx := context.TODO()
+type Handler interface {
+	PlaceOrder(http.ResponseWriter, *http.Request)
+	GetOrders(writer http.ResponseWriter, request *http.Request)
+}
+
+func Run(ctx context.Context, cfg lib.Config, requestHandler Handler) error {
 	var err error
-	err = setKafkaTopic(cfg)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/orders", requestHandler.CreateOrder).Methods("POST")
+	router.HandleFunc("/api/v1/orders", requestHandler.PlaceOrder).Methods("POST")
 	router.HandleFunc("/api/v1/orders", requestHandler.GetOrders).Methods("GET")
 
 	c := cors.New(cors.Options{
@@ -44,39 +43,6 @@ func Run(cfg lib.Config, requestHandler Handler) error {
 	return nil
 }
 
-func setKafkaTopic(cfg lib.Config) error {
-	conn, err := kafka.Dial("tcp", cfg.Kafka)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer conn.Close()
-
-	controller, err := conn.Controller()
-	if err != nil {
-		panic(err.Error())
-	}
-	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
-	if err != nil {
-		panic(err.Error())
-	}
-	defer controllerConn.Close()
-
-	topicConfigs := []kafka.TopicConfig{
-		{Topic: use_case.OrderStatusPlacedTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusCreatedTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusCanceledTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusPaidTopic, NumPartitions: 1, ReplicationFactor: 1},
-		{Topic: use_case.OrderStatusRejectedTopic, NumPartitions: 1, ReplicationFactor: 1},
-	}
-
-	err = controllerConn.CreateTopics(topicConfigs...)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return nil
-}
-
 func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
 	errChan := make(chan error, 1)
 
@@ -93,7 +59,6 @@ func startServer(ctx context.Context, httpHandler http.Handler, cfg lib.Config) 
 }
 
 func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) error {
-	log.Printf("%s is starting at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.HTTPPort),
 		Handler: httpHandler,
@@ -104,13 +69,9 @@ func startHTTP(ctx context.Context, httpHandler http.Handler, cfg lib.Config) er
 			panic(err)
 		}
 	}()
+	log.Printf("%s is running at port %d:", cfg.App.Name, cfg.App.HTTPPort)
 
-	return gracefulShutdown(ctx, server, cfg)
-}
-
-func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) error {
 	interruption := make(chan os.Signal, 1)
-	defer log.Printf("%s is shutting down...", cfg.App.Name)
 
 	signal.Notify(interruption, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 	<-interruption
@@ -118,6 +79,7 @@ func gracefulShutdown(ctx context.Context, server *http.Server, cfg lib.Config) 
 	if err := server.Shutdown(ctx); err != nil {
 		return err
 	}
+	log.Printf("%s is shutting down...", cfg.App.Name)
 
 	return nil
 }
