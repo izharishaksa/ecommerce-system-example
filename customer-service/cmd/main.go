@@ -20,7 +20,6 @@ func main() {
 		customerRepository := customer.NewInMemoryRepository()
 		customerService := use_case.NewCustomerService(customerRepository)
 		requestHandler := rest.NewHandler(customerService)
-
 		err := rest.Run(ctx, cfg, requestHandler)
 		if err != nil {
 			log.Println(err)

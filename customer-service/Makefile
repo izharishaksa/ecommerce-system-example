@@ -1,5 +1,3 @@
-.Phony: all
-
 SHELL := /bin/bash # Use bash syntax
 SOURCE_DIRS=$(shell go list ./... | grep -v /vendor | grep -v /out | cut -d "/" -f2 | sort | uniq)
 
@@ -14,3 +12,8 @@ start-server: build
 
 test:
 	@GO111MODULE=on go test ./...
+
+proto:
+	@GO111MODULE=on protoc --go_out=. ./proto/*.proto
+
+#.Phony: build start-server test
