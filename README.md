@@ -1,9 +1,7 @@
 # Simple Ecommerce System
 Project page: https://github.com/users/izharishaksa/projects/6/views/1
 
-<<<<<<< HEAD
 Implementing Event Driven Architecture and use Domain Driven Design approach.
->>>>>>> Squashed commit of the following:
 
 [![Customer Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/customer-service.yaml)
 [![Inventory Service](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml/badge.svg)](https://github.com/izharishaksa/ecommerce-system-example/actions/workflows/inventory-service.yaml)
