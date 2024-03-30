@@ -13,13 +13,13 @@ import (
 	"syscall"
 )
 
-type Handler interface {
+type handler interface {
 	RegisterCustomer(http.ResponseWriter, *http.Request)
 	GetCustomer(http.ResponseWriter, *http.Request)
 	TopUpBalance(http.ResponseWriter, *http.Request)
 }
 
-func Run(ctx context.Context, cfg lib.Config, requestHandler Handler) error {
+func Run(ctx context.Context, cfg lib.Config, requestHandler handler) error {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/customers", requestHandler.RegisterCustomer).Methods("POST")
 	router.HandleFunc("/api/v1/customers", requestHandler.GetCustomer).Methods("GET")

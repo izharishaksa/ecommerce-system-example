@@ -8,21 +8,21 @@ import (
 	"net/http"
 )
 
-type CustomerService interface {
+type customerService interface {
 	RegisterCustomer(name, email string) (*uuid.UUID, error)
 	GetAllCustomers() ([]use_case.CustomerDetail, error)
 	TopUp(customerId uuid.UUID, amount float64) error
 }
 
-type handlerImpl struct {
-	customerService CustomerService
+type Handler struct {
+	customerService customerService
 }
 
-func NewHandler(customerService CustomerService) *handlerImpl {
-	return &handlerImpl{customerService: customerService}
+func NewHandler(customerService customerService) *Handler {
+	return &Handler{customerService: customerService}
 }
 
-func (h handlerImpl) RegisterCustomer(w http.ResponseWriter, r *http.Request) {
+func (h Handler) RegisterCustomer(w http.ResponseWriter, r *http.Request) {
 	type requestBody struct {
 		Name  string `json:"name"`
 		Email string `json:"email"`
@@ -42,7 +42,7 @@ func (h handlerImpl) RegisterCustomer(w http.ResponseWriter, r *http.Request) {
 	lib.WriteResponse(w, err, productId)
 }
 
-func (h handlerImpl) GetCustomer(w http.ResponseWriter, _ *http.Request) {
+func (h Handler) GetCustomer(w http.ResponseWriter, _ *http.Request) {
 	customers, err := h.customerService.GetAllCustomers()
 	if err != nil {
 		lib.WriteResponse(w, err, nil)
@@ -51,7 +51,7 @@ func (h handlerImpl) GetCustomer(w http.ResponseWriter, _ *http.Request) {
 	lib.WriteResponse(w, err, customers)
 }
 
-func (h handlerImpl) TopUpBalance(w http.ResponseWriter, r *http.Request) {
+func (h Handler) TopUpBalance(w http.ResponseWriter, r *http.Request) {
 	type requestBody struct {
 		CustomerId uuid.UUID `json:"customer_id"`
 		Amount     float64   `json:"amount"`
